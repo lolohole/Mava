@@ -1,0 +1,188 @@
+/* تنسيق عام */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* تنسيق الهيدر */
+header {
+  background-color: #333;
+  padding: 10px 0;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.navbar .logo a {
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+}
+
+.navbar .links a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 18px;
+}
+
+.navbar .links a:hover {
+  text-decoration: underline;
+}
+
+/* تنسيق الفوتر */
+footer {
+  background-color: #333;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.footer-content p {
+  margin: 0;
+}
+
+/* تنسيق المحتوى العام */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+section {
+  margin-top: 40px;
+}
+
+/* تنسيق المنشورات */
+.post {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.post img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.post .post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.post .post-header img {
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.post .post-header strong {
+  font-size: 18px;
+}
+
+/* التنسيق للأزرار */
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* الحقول والنماذج */
+input[type="text"], textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+input[type="file"] {
+  margin-bottom: 10px;
+}
+
+.comment-form input {
+  margin-bottom: 15px;
+}
+
+/* تنسيق قسم التعليقات */
+.comments {
+  margin-top: 20px;
+}
+
+.comments ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.comments ul li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.comments .comment-form {
+  margin-top: 20px;
+}
+
+
+
+
+
+
+
+
+
+
+/* خلفية الجسيمات */
+.particles-background {
+  background: url('path-to-particles-image.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* خلفية متدرجة */
+.gradient-background {
+  background: linear-gradient(to right, #ff7e5f, #feb47b);
+}
+
+/* خلفية ثابتة */
+.solid-color-background {
+  background-color: #f0f0f0;
+}
+
+/* خلفية أخرى باستخدام صورة ثابتة */
+.custom-image-background {
+  background: url('path-to-custom-image.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* خلفية باستخدام كانفس */
+.canvas-background {
+  background: url('path-to-canvas-image.png') no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* خلفية متعددة الألوان متدرجة */
+.multi-color-gradient-background {
+  background: linear-gradient(to top right, #3f87a6, #ebf8e1, #f69d3c);
+}
