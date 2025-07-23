@@ -1,0 +1,89 @@
+<%- include('../partials/header') %>
+
+<div class="container py-4">
+  <h3>الدردشة مع <%= otherUser.username %></h3>
+
+  <!-- معرف المستخدمين لسكربت JS -->
+  <input type="hidden" id="currentUserId" value="<%= currentUser._id %>">
+  <input type="hidden" id="otherUserId" value="<%= otherUser._id %>">
+
+  <!-- الرسائل -->
+  <div id="chat-box" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: scroll;">
+    <% messages.forEach(m => { %>
+      <div class="mb-2 <%= m.sender.toString() === currentUser._id.toString() ? 'text-end text-primary' : 'text-start text-dark' %>">
+        <small><strong><%= m.sender.toString() === currentUser._id.toString() ? 'أنت' : otherUser.username %>:</strong></small>
+        <p class="mb-0"><%= m.message %></p>
+        <small class="text-muted"><%= new Date(m.createdAt).toLocaleTimeString() %></small>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- نموذج كتابة الرسالة -->
+  <form id="chat-form" class="d-flex">
+    <input type="text" id="message-input" class="form-control me-2" placeholder="اكتب رسالة...">
+    <button type="submit" class="btn btn-primary">إرسال</button>
+  </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/chat.js"></script>
+<script>
+  const socket = io();
+  socket.emit('register', '<%= currentUser._id %>');
+</script>
+<script>
+  console.log("Current User:", document.getElementById('currentUserId').value);
+  console.log("Other User:", document.getElementById('otherUserId').value);
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const socket = io();
+
+  const currentUserId = document.getElementById('currentUserId').value;
+  const otherUserId = document.getElementById('otherUserId').value;
+  const chatForm = document.getElementById('chat-form');
+  const messageInput = document.getElementById('message-input');
+  const chatBox = document.getElementById('chat-box');
+
+  // تسجيل المستخدم في السوكت
+  socket.emit('register', currentUserId);
+
+  // إنشاء معرف الغرفة بحيث يكون ثابت للطرفين
+  const roomId = [currentUserId, otherUserId].sort().join('-');
+
+  // الانضمام إلى الغرفة
+  socket.emit('joinRoom', roomId);
+
+  // إرسال رسالة
+  chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = messageInput.value.trim();
+    if (message) {
+      socket.emit('chatMessage', {
+        roomId,
+        senderId: currentUserId,
+        receiverId: otherUserId,
+        message
+      });
+      messageInput.value = '';
+    }
+  });
+
+  // استقبال الرسالة وعرضها
+  socket.on('message', ({ senderId, message, createdAt }) => {
+    const isOwnMessage = senderId === currentUserId;
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `mb-2 ${isOwnMessage ? 'text-end text-primary' : 'text-start text-dark'}`;
+    messageDiv.innerHTML = `
+      <small><strong>${isOwnMessage ? 'أنت' : 'الطرف الآخر'}:</strong></small>
+      <p class="mb-0">${message}</p>
+      <small class="text-muted">${new Date(createdAt).toLocaleTimeString()}</small>
+    `;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+});
+
+</script>
+
+<%- include('../partials/footer') %>

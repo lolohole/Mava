@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Conversation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fa;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      padding-top: 50px;
+    }
+
+    .chat-container {
+      width: 80%;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4c6ef5;
+    }
+
+    #msgs {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .sent {
+      text-align: right;
+      background: #dcf8c6;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      position: relative;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .sent:hover {
+      transform: scale(1.05);
+    }
+
+    .recv {
+      text-align: left;
+      background: #ffffff;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      position: relative;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .recv:hover {
+      transform: scale(1.05);
+    }
+
+    .sentiment {
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .sentiment span {
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #frm {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #txt {
+      width: 80%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-right: 10px;
+      outline: none;
+    }
+
+    #txt:focus {
+      border-color: #4c6ef5;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4c6ef5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #3b5bbf;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <h2>Chat with <%= otherUser.username %></h2>
+
+    <div id="msgs">
+      <% messages.forEach(m => { 
+        const isSent = String(m.sender) === String(user._id);
+      %>
+        <div class="<%= isSent ? 'sent' : 'recv' %>">
+          <%= m.message %> <small><%= new Date(m.createdAt).toLocaleTimeString() %></small>
+          <div class="sentiment">
+            <% if (m.emotion === 'حب') { %>
+              <span style="color:pink;">💖 Love</span>
+            <% } else if (m.emotion === 'إيجابي') { %>
+              <span style="color:green;">😊 Positive</span>
+            <% } else if (m.emotion === 'ممتن') { %>
+              <span style="color:blue;">🙏 Grateful</span>
+            <% } else if (m.emotion === 'غضب') { %>
+              <span style="color:red;">😡 Angry</span>
+            <% } else if (m.emotion === 'سلبي') { %>
+              <span style="color:red;">😞 Negative</span>
+            <% } else { %>
+              <span style="color:gray;">😐 Neutral</span>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <form id="frm">
+      <input id="txt" autocomplete="off" placeholder="Type a message..." />
+      <button>Send</button>
+    </form>
+  </div>
+
+  <canvas id="interactiveCanvas"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const myId = '<%= user._id %>';
+    const otherId = '<%= otherUser._id %>';
+    const convId = '<%= conversation._id %>';
+
+    socket.emit('register', myId);
+    socket.emit('joinConv', convId);
+
+    (() => {
+      const form = document.getElementById('frm');
+      const input = document.getElementById('txt');
+      const msgsContainer = document.getElementById('msgs');
+
+      form.onsubmit = e => {
+        e.preventDefault();
+        const messageText = input.value.trim();
+        if (!messageText) return;
+
+        socket.emit('sendMsg', {
+          convId,
+          senderId: myId,
+          receiverId: otherId,
+          message: messageText
+        });
+
+        input.value = '';
+      };
+
+      socket.on('newMsg', m => {
+        const div = document.createElement('div');
+        div.className = String(m.sender) === myId ? 'sent' : 'recv';
+        div.innerHTML = `${m.message} <small>${new Date(m.createdAt).toLocaleTimeString()}</small>`;
+
+        const sentimentDiv = document.createElement('div');
+        sentimentDiv.classList.add('sentiment');
+
+        if (m.emotion === 'حب') {
+          sentimentDiv.innerHTML = '<span style="color:pink;">💖 Love</span>';
+        } else if (m.emotion === 'إيجابي') {
+          sentimentDiv.innerHTML = '<span style="color:green;">😊 Positive</span>';
+        } else if (m.emotion === 'ممتن') {
+          sentimentDiv.innerHTML = '<span style="color:blue;">🙏 Grateful</span>';
+        } else if (m.emotion === 'غضب') {
+          sentimentDiv.innerHTML = '<span style="color:red;">😡 Angry</span>';
+        } else if (m.emotion === 'سلبي') {
+          sentimentDiv.innerHTML = '<span style="color:red;">😞 Negative</span>';
+        } else {
+          sentimentDiv.innerHTML = '<span style="color:gray;">😐 Neutral</span>';
+        }
+
+        div.appendChild(sentimentDiv);
+        msgsContainer.appendChild(div);
+        msgsContainer.scrollTop = msgsContainer.scrollHeight;
+      });
+    })();
+
+    // Background Particle Effect
+    const canvas = document.getElementById('interactiveCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function drawParticles() {
+      const particles = [];
+      for (let i = 0; i < 200; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 3 + 1,
+          speedX: Math.random() * 2 - 1,
+          speedY: Math.random() * 2 - 1,
+          color: 'rgba(72, 88, 235, 0.5)',
+        });
+      }
+
+      function updateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((particle, index) => {
+          particle.x += particle.speedX;
+          particle.y += particle.speedY;
+
+          if (particle.x < 0 || particle.x > canvas.width || particle.y < 0 || particle.y > canvas.height) {
+            particles[index] = {
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              size: Math.random() * 3 + 1,
+              speedX: Math.random() * 2 - 1,
+              speedY: Math.random() * 2 - 1,
+              color: 'rgba(72, 88, 235, 0.5)',
+            };
+          }
+
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx.fillStyle = particle.color;
+          ctx.fill();
+        });
+
+        requestAnimationFrame(updateParticles);
+      }
+
+      updateParticles();
+    }
+
+    drawParticles();
+  </script>
+   
+</body>
+</html>

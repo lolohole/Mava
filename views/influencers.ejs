@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Influencers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    header {
+      background-color: #4CAF50;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .influencers {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .influencer {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .influencer:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .influencer h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .influencer p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      margin-top: 10px;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .no-influencers {
+      text-align: center;
+      font-size: 18px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Influencers</h1>
+  </header>
+
+  <main>
+    <div class="influencers">
+      <% if (influencers && influencers.length > 0) { %>
+        <% influencers.forEach(influencer => { %>
+          <div class="influencer">
+            <h2><%= influencer.name %></h2> <!-- Ensure the 'name' field exists in the User model -->
+            <p><strong>Interests:</strong> <%= influencer.interests.join(', ') %></p> <!-- Ensure 'interests' is the correct field -->
+            <a href="/influencers/<%= influencer._id %>" class="btn">View Profile</a>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="no-influencers">
+          <p>No influencers found.</p>
+        </div>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

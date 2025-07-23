@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نتائج البحث - <%= query %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container mt-4">
+    <h4>نتائج البحث عن "<%= query %>"</h4>
+
+    <hr>
+
+    <h5>👤 مستخدمين</h5>
+    <% if (users.length > 0) { %>
+      <ul class="list-group mb-4">
+        <% users.forEach(user => { %>
+          <li class="list-group-item d-flex align-items-center">
+            <img src="<%= user.avatar || '/default-avatar.png' %>" width="40" height="40" class="rounded-circle me-2">
+            <a href="/users/<%= user._id %>"><%= user.username %></a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="text-muted">لا يوجد مستخدمين مطابقين.</p>
+    <% } %>
+
+    <h5>📸 منشورات</h5>
+    <% if (posts.length > 0) { %>
+      <% posts.forEach(post => { %>
+        <div class="card mb-3">
+          <img src="<%= post.image %>" class="card-img-top" alt="صورة المنشور">
+          <div class="card-body">
+            <h6 class="card-title"><a href="/users/<%= post.user._id %>"><%= post.user.username %></a></h6>
+            <p class="card-text"><%= post.caption %></p>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p class="text-muted">لا توجد منشورات مطابقة.</p>
+    <% } %>
+
+    <a href="/" class="btn btn-secondary mt-3">عودة للرئيسية</a>
+  </div>
+</body>
+</html>

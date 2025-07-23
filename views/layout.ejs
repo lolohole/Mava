@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title || "Mava" %></title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Socket.IO -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Custom Styles -->
+  <style>
+    body {
+      padding-bottom: 80px;
+      background-color: #f8f9fa;
+      font-family: 'Arial', sans-serif;
+      margin-top: 80px; /* Create space below the navbar */
+    }
+    
+    /* Navbar customizations */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar img {
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* Content space under navbar */
+    main {
+      padding-top: 80px;
+    }
+
+    /* Bottom navbar for mobile */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: white;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      z-index: 1000;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .bottom-nav a {
+      color: #333;
+      text-decoration: none;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .bottom-nav a:hover {
+      color: #0d6efd;
+    }
+
+    /* Canvas customizations */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+
+  </style>
+
+  <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body data-userid="<%= currentUser?._id %>">
+
+
+  
+  <!-- 🔝 Fixed Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/">📸 Mava</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav gap-3 align-items-center">
+          <% if (currentUser) { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/posts/new">➕ New Post</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/conversations">💬 Messages</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="/users/<%= currentUser._id %>">
+                <img src="<%= currentUser.avatar || '/default-avatar.png' %>" width="30" height="30" />
+                <span><%= currentUser.username %></span>
+              </a>
+            </li>
+            <a href="/notifications" id="notificationIcon" class="position-relative">
+              🔔
+              <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none">0</span>
+            </a>
+            <li class="nav-item">
+              <form action="/auth/logout" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-link nav-link">🚪 Logout</button>
+              </form>
+            </li>
+          <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/login">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/register">Sign Up</a>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ Main Content Area -->
+  <main class="container py-4">
+    <%- body %>
+  </main>
+
+  <!-- 🔽 Bottom Navbar for Mobile -->
+  <% if (currentUser) { %>
+    <div class="bottom-nav d-lg-none">
+      <a href="/"><i class="bi bi-house-door-fill"></i><br>Home</a>
+      <a href="/posts/new"><i class="bi bi-plus-square-fill"></i><br>New</a>
+      <a href="/inpox"><i class="bi bi-chat-dots-fill"></i><br>Messages</a>
+      <a href="/users/<%= currentUser._id %>"><i class="bi bi-person-circle"></i><br>Profile</a>
+    </div>
+  <% } %>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Socket.IO -->
+  <script>
+    const socket = io();
+    <% if (currentUser) { %>
+      socket.emit('register', '<%= currentUser._id %>');
+    <% } %>
+  </script>
+
+  <!-- Pass User Token -->
+  <script>const USER_TOKEN = '<%= token || "" %>';</script>
+
+  <!-- Custom Chat JS -->
+  <script src="/js/chat.js"></script>
+
+  <!-- Canvas Code -->
+  <script>
+    // Canvas customization
+    const canvas = document.createElement('canvas');
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Particle effect or any other animations
+    function drawParticles() {
+      const particles = [];
+      for (let i = 0; i < 200; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 3 + 1,
+          speedX: Math.random() * 2 - 1,
+          speedY: Math.random() * 2 - 1,
+          color: 'rgba(72, 88, 235, 0.5)',
+        });
+      }
+
+      function updateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((particle, index) => {
+          particle.x += particle.speedX;
+          particle.y += particle.speedY;
+
+          if (particle.x < 0 || particle.x > canvas.width || particle.y < 0 || particle.y > canvas.height) {
+            particles[index] = {
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              size: Math.random() * 3 + 1,
+              speedX: Math.random() * 2 - 1,
+              speedY: Math.random() * 2 - 1,
+              color: 'rgba(72, 88, 235, 0.5)',
+            };
+          }
+
+          ctx.beginPath();
+          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx.fillStyle = particle.color;
+          ctx.fill();
+        });
+
+        requestAnimationFrame(updateParticles);
+      }
+
+      updateParticles();
+    }
+
+    drawParticles();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+
+  <!-- Google Translate (optional for translation) -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,ar', // Add other languages here
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text
+  <!-- Google Translate (optional for translation) -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,ar', // Add other languages here if needed
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- Optionally, add a div for the Google Translate widget -->
+  <div id="google_translate_element" style="position: fixed; bottom: 10px; left: 10px;"></div>
+
+  <!-- Custom JavaScript -->
+  <script src="/public/js/main.js"></script>
+  
+
+</body>
+</html>

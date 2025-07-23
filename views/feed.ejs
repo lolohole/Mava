@@ -1,0 +1,503 @@
+<% layout('layouts/main') %>
+<% title = 'Feed' %>
+
+<%- include('post_form') %>
+
+<section id="feed">
+  <% posts.forEach(post => { %>
+    <article class="post">
+      <div class="post-header">
+        <img src="<%= post.user.avatar || '/default-avatar.png' %>" alt="avatar" width="40">
+        <strong><%= post.user.username %></strong>
+      </div>
+      <% if(post.image){ %>
+        <img src="<%= post.image %>" alt="post image" class="post-img">
+      <% } %>
+      <p><%= post.caption || '' %></p>
+      <div class="post-actions">
+        <button class="like-btn" data-id="<%= post._id %>">
+          Like (<span class="like-count"><%= post.likes.length %></span>)
+        </button>
+        <button class="comment-toggle" data-id="<%= post._id %>">
+          Comment (<%= post.comments.length %>)
+        </button>
+      </div>
+      <div class="comments" id="comments-<%= post._id %>" style="display:none;">
+        <ul>
+          <% post.comments.forEach(c => { %>
+            <li><strong><%= c.user.username %>:</strong> <%= c.text %></li>
+          <% }) %>
+        </ul>
+        <form class="comment-form" data-id="<%= post._id %>">
+          <input type="text" name="text" placeholder="Add a comment..." required>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </article>
+  <% }) %>
+</section>
+
+<div id="loading" style="text-align:center; font-weight:bold; display:none;">Loading...</div>
+
+<div id="error-message" class="alert alert-danger" style="display:none; text-align:center;"></div>
+
+<script>
+  let page = 2; // page 1 is already loaded from the server
+  let loading = false;
+  let noMorePosts = false;
+
+  async function loadPosts() {
+    if (loading || noMorePosts) return;
+    loading = true;
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+      const res = await fetch(`/users/feed?page=${page}`);
+      if (!res.ok) throw new Error('Error fetching posts');
+      const posts = await res.json();
+
+      if (posts.length === 0) {
+        noMorePosts = true;
+        document.getElementById('loading').innerText = 'No more posts';
+        return;
+      }
+
+      const container = document.getElementById('feed');
+      posts.forEach(post => {
+        const postHTML = `
+          <article class="post">
+            <div class="post-header">
+              <img src="${post.user.avatar || '/default-avatar.png'}" alt="avatar" width="40">
+              <strong>${post.user.username}</strong>
+            </div>
+            ${post.image ? `<img src="${post.image}" alt="post image" class="post-img">` : ''}
+            <p>${post.caption || ''}</p>
+            <div class="post-actions">
+              <button class="like-btn" data-id="${post._id}">
+                Like (<span class="like-count">${post.likes.length}</span>)
+              </button>
+              <button class="comment-toggle" data-id="${post._id}">
+                Comment (${post.comments.length})
+              </button>
+            </div>
+            <div class="comments" id="comments-${post._id}" style="display:none;">
+              <ul>
+                ${post.comments.map(c => `<li><strong>${c.user.username}:</strong> ${c.text}</li>`).join('')}
+              </ul>
+              <form class="comment-form" data-id="${post._id}">
+                <input type="text" name="text" placeholder="Add a comment..." required>
+                <button type="submit">Send</button>
+              </form>
+            </div>
+          </article>
+        `;
+        container.insertAdjacentHTML('beforeend', postHTML);
+      });
+
+      page++;
+    } catch (err) {
+      console.error(err);
+      showErrorMessage('Failed to load posts. Please try again later.');
+    } finally {
+      loading = false;
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  function showErrorMessage(message) {
+    const errorElement = document.getElementById('error-message');
+    errorElement.innerText = message;
+    errorElement.style.display = 'block';
+  }
+
+  window.addEventListener('scroll', () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+      loadPosts();
+    }
+  });
+
+  // Add event listeners for like, comment actions if needed after loading the content.
+</script>
+
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+  }
+
+  .post {
+    background-color: #fff;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .post-header img {
+    border-radius: 50%;
+  }
+
+  .post-header strong {
+    margin-left: 10px;
+    font-size: 1.1rem;
+  }
+
+  .post-img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 15px;
+  }
+
+  .post-actions {
+    margin-top: 15px;
+  }
+
+  .post-actions button {
+    padding: 8px 12px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+
+  .post-actions button:hover {
+    background-color: #0056b3;
+  }
+
+  .comments {
+    margin-top: 20px;
+    padding-left: 20px;
+  }
+
+  .comment-form {
+    display: flex;
+    margin-top: 10px;
+  }
+
+  .comment-form input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .comment-form button {
+    padding: 8px 15px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+
+  .comment-form button:hover {
+    background-color: #218838;
+  }
+
+  #loading {
+    font-size: 1.2rem;
+    color: #007bff;
+  }
+
+  #error-message {
+    font-size: 1rem;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 20px 0;
+  }
+</style>
+<!-- إضافة المزيد من التصميم والوظائف للمحتوى الديناميكي -->
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+  }
+
+  .post {
+    background-color: #fff;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .post:hover {
+    transform: scale(1.02);
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .post-header img {
+    border-radius: 50%;
+  }
+
+  .post-header strong {
+    margin-left: 10px;
+    font-size: 1.1rem;
+  }
+
+  .post-img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 15px;
+  }
+
+  .post-actions {
+    margin-top: 15px;
+  }
+
+  .post-actions button {
+    padding: 8px 12px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .post-actions button:hover {
+    background-color: #0056b3;
+  }
+
+  .comments {
+    margin-top: 20px;
+    padding-left: 20px;
+  }
+
+  .comment-form {
+    display: flex;
+    margin-top: 10px;
+  }
+
+  .comment-form input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .comment-form button {
+    padding: 8px 15px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s;
+  }
+
+  .comment-form button:hover {
+    background-color: #218838;
+  }
+
+  #loading {
+    font-size: 1.2rem;
+    color: #007bff;
+  }
+
+  #error-message {
+    font-size: 1rem;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 20px 0;
+  }
+</style>
+
+<script>
+  let page = 2; // page 1 is already loaded from the server
+  let loading = false;
+  let noMorePosts = false;
+
+  // Function to load posts dynamically
+  async function loadPosts() {
+    if (loading || noMorePosts) return;
+    loading = true;
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+      const res = await fetch(`/users/feed?page=${page}`);
+      if (!res.ok) throw new Error('Error fetching posts');
+      const posts = await res.json();
+
+      if (posts.length === 0) {
+        noMorePosts = true;
+        document.getElementById('loading').innerText = 'No more posts';
+        return;
+      }
+
+      const container = document.getElementById('feed');
+      posts.forEach(post => {
+        const postHTML = `
+          <article class="post">
+            <div class="post-header">
+              <img src="${post.user.avatar || '/default-avatar.png'}" alt="avatar" width="40">
+              <strong>${post.user.username}</strong>
+            </div>
+            ${post.image ? `<img src="${post.image}" alt="post image" class="post-img">` : ''}
+            <p>${post.caption || ''}</p>
+            <div class="post-actions">
+              <button class="like-btn" data-id="${post._id}">
+                Like (<span class="like-count">${post.likes.length}</span>)
+              </button>
+              <button class="comment-toggle" data-id="${post._id}">
+                Comment (${post.comments.length})
+              </button>
+            </div>
+            <div class="comments" id="comments-${post._id}" style="display:none;">
+              <ul>
+                ${post.comments.map(c => `<li><strong>${c.user.username}:</strong> ${c.text}</li>`).join('')}
+              </ul>
+              <form class="comment-form" data-id="${post._id}">
+                <input type="text" name="text" placeholder="Add a comment..." required>
+                <button type="submit">Send</button>
+              </form>
+            </div>
+          </article>
+        `;
+        container.insertAdjacentHTML('beforeend', postHTML);
+      });
+
+      page++;
+    } catch (err) {
+      console.error(err);
+      showErrorMessage('Failed to load posts. Please try again later.');
+    } finally {
+      loading = false;
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  // Function to show error message dynamically
+  function showErrorMessage(message) {
+    const errorElement = document.getElementById('error-message');
+    errorElement.innerText = message;
+    errorElement.style.display = 'block';
+  }
+
+  window.addEventListener('scroll', () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+      loadPosts();
+    }
+  });
+</script>
+<!-- إضافة تحسينات التفاعل مع الأزرار -->
+<script>
+  // Function to toggle like button state
+  async function toggleLike(postId) {
+    const button = document.querySelector(`.like-btn[data-id="${postId}"]`);
+    const likeCountElement = button.querySelector('.like-count');
+    const currentLikes = parseInt(likeCountElement.innerText);
+
+    // Toggle like state
+    const isLiked = button.classList.contains('liked');
+    button.classList.toggle('liked');
+    
+    const newLikesCount = isLiked ? currentLikes - 1 : currentLikes + 1;
+    likeCountElement.innerText = newLikesCount;
+
+    // Update like count on server
+    try {
+      const res = await fetch(`/posts/${postId}/like`, {
+        method: isLiked ? 'DELETE' : 'POST',
+      });
+
+      if (!res.ok) throw new Error('Failed to update like status');
+    } catch (err) {
+      console.error(err);
+      alert('Error while updating like status');
+    }
+  }
+
+  // Function to submit a comment
+  async function submitComment(postId, commentText) {
+    const form = document.querySelector(`.comment-form[data-id="${postId}"]`);
+    const commentsSection = document.getElementById(`comments-${postId}`);
+    
+    // Show new comment instantly
+    const newComment = `<li><strong>You:</strong> ${commentText}</li>`;
+    commentsSection.querySelector('ul').insertAdjacentHTML('beforeend', newComment);
+    
+    // Clear the comment input
+    form.querySelector('input').value = '';
+
+    // Send the comment to the server
+    try {
+      const res = await fetch(`/posts/${postId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ text: commentText }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!res.ok) throw new Error('Error while posting comment');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to post comment');
+    }
+  }
+
+  // Handle like button click
+  document.querySelectorAll('.like-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const postId = button.getAttribute('data-id');
+      toggleLike(postId);
+    });
+  });
+
+  // Handle comment form submission
+  document.querySelectorAll('.comment-form').forEach(form => {
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const postId = form.getAttribute('data-id');
+      const commentText = form.querySelector('input').value;
+      submitComment(postId, commentText);
+    });
+  });
+</script>
+<!-- تحسينات إضافية على تصميم الأزرار -->
+<style>
+  .like-btn.liked {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .comment-toggle {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .comment-toggle:hover, .like-btn:hover {
+    opacity: 0.8;
+  }
+
+  /* تحريك زر الإعجاب عند الضغط عليه */
+  .like-btn.liked {
+    background-color: #dc3545;
+    color: white;
+    font-weight: bold;
+  }
+
+  .comment-toggle:active, .like-btn:active {
+    transform: scale(0.98);
+  }
+</style>

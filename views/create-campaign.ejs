@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Campaign</title>
+</head>
+<body>
+  <h1>Create a New Campaign</h1>
+  <form action="/campaigns/create-campaign" method="POST">
+  <label for="companyName">Company Name:</label>
+  <input type="text" id="companyName" name="companyName" required><br><br>
+
+  <label for="campaignName">Campaign Name:</label>
+  <input type="text" id="campaignName" name="campaignName" required><br><br>
+
+  <label for="startDate">Start Date:</label>
+  <input type="date" id="startDate" name="startDate" required><br><br>
+
+  <label for="endDate">End Date:</label>
+  <input type="date" id="endDate" name="endDate" required><br><br>
+
+  <label for="targetAudience">Target Audience (comma separated):</label>
+  <input type="text" id="targetAudience" name="targetAudience" required><br><br>
+
+  <label for="discountCode">Discount Code:</label>
+  <input type="text" id="discountCode" name="discountCode" required><br><br>
+
+  <label for="description">Campaign Description:</label>
+  <textarea id="description" name="description" required></textarea><br><br>
+
+  <button type="submit">Create Campaign</button>
+</form>
+
+</body>
+</html>

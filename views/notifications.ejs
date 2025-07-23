@@ -1,0 +1,43 @@
+<!-- views/notifications.ejs -->
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Notifications</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+
+  <h2 class="mb-4">📢 Your Notifications</h2>
+  <a href="/" class="btn btn-sm btn-outline-secondary mb-3">Back to Home</a>
+
+  <form method="POST" action="/mark-read" class="mb-3">
+    <button type="submit" class="btn btn-sm btn-success">Mark All as Read</button>
+  </form>
+
+  <ul class="list-group">
+    <% if (notifications.length === 0) { %>
+      <li class="list-group-item text-center text-muted">No notifications.</li>
+    <% } else { %>
+      <% notifications.forEach(n => { %>
+        <li class="list-group-item d-flex justify-content-between align-items-start" style="<%= n.isRead ? 'opacity: 0.6;' : 'font-weight: bold;' %>">
+          <div class="ms-2 me-auto">
+            <div>
+              <% if (n.type === 'like' || n.type === 'comment') { %>
+                <a href="/posts/<%= n.post?._id %>"><%= n.message %></a>
+              <% } else if (n.type === 'follow') { %>
+                <a href="/users/<%= n.user?._id %>"><%= n.message %></a>
+              <% } else { %>
+                <%= n.message %>
+              <% } %>
+            </div>
+            <small class="text-muted"><%= n.createdAt.toLocaleDateString() %></small>
+          </div>
+        </li>
+      <% }) %>
+    <% } %>
+  </ul>
+
+</body>
+</html>

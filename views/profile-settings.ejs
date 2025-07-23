@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Account Settings - <%= user?.username || 'User' %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding-top: 0px;
+    }
+    .settings-container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-bottom: 20px;
+      border-bottom: 2px solid #0d6efd;
+      padding-bottom: 10px;
+      font-size: 1.5rem;
+      color: #333;
+    }
+    .form-control, .form-select {
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .form-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .btn-primary, .btn-warning, .btn-danger {
+      font-size: 1.1rem;
+      padding: 12px 20px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    .btn-primary:hover, .btn-warning:hover, .btn-danger:hover {
+      opacity: 0.8;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-warning {
+      background-color: #ffc107;
+      color: white;
+    }
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+    }
+    .form-check-label {
+      margin-left: 10px;
+    }
+    hr {
+      margin: 30px 0;
+      border-top: 2px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+  
+<% layout = false %>
+
+  <div class="settings-container">
+
+    <!-- Account Data -->
+    <h2>Update Account Information</h2>
+   <form action="/settings" method="POST">
+  <div class="mb-3">
+    <label class="form-label">Full Name</label>
+    <input type="text" class="form-control" name="fullName" value="<%= user?.fullName || '' %>" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input type="text" class="form-control" name="username" value="<%= user?.username || '' %>" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Email</label>
+    <input type="email" class="form-control" name="email" value="<%= user?.email || '' %>" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">About Me</label>
+    <textarea class="form-control" name="bio" rows="3"><%= user?.bio || '' %></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Website</label>
+    <input type="url" class="form-control" name="website" value="<%= user?.website || '' %>" />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Phone Number</label>
+    <input type="tel" class="form-control" name="phone" value="<%= user?.phone || '' %>" />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Gender</label>
+    <select class="form-select" name="gender">
+      <option value="" <%= !user?.gender ? 'selected' : '' %>>Select</option>
+      <option value="male" <%= user?.gender === 'male' ? 'selected' : '' %>>Male</option>
+      <option value="female" <%= user?.gender === 'female' ? 'selected' : '' %>>Female</option>
+      <option value="other" <%= user?.gender === 'other' ? 'selected' : '' %>>Other</option>
+    </select>
+  </div>
+
+  <!-- Save Changes Button inside the form -->
+  <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+</form>
+
+    
+
+    <hr />
+
+    <!-- Privacy Settings -->
+    <form action="/privacy" method="POST">
+  <label for="privacy">إعدادات الخصوصية:</label>
+ <select name="privacy" id="privacy" required>
+  <option value="public" <%= user.privacy === 'public' ? 'selected' : '' %>>عام</option>
+  <option value="private" <%= user.privacy === 'private' ? 'selected' : '' %>>خاص</option>
+</select>
+
+
+  <button type="submit">تحديث</button>
+</form>
+
+
+
+    <!-- Notification Settings -->
+    <h2>Notification Settings</h2>
+    <form action="/settings/notifications" method="POST">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="likes" value="true" <%= user?.notifications?.likes ? 'checked' : '' %> />
+        <label class="form-check-label">Like Notifications</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="comments" value="true" <%= user?.notifications?.comments ? 'checked' : '' %> />
+        <label class="form-check-label">Comment Notifications</label>
+      </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" name="newFollowers" value="true" <%= user?.notifications?.newFollowers ? 'checked' : '' %> />
+        <label class="form-check-label">New Follower Notifications</label>
+      </div>
+      <button type="submit" class="btn btn-primary">🔔 Save Notifications</button>
+    </form>
+
+    <hr />
+
+    <!-- Change Password -->
+    <h2>Change Password</h2>
+    <form action="/settings/password" method="POST">
+      <div class="mb-3">
+        <label class="form-label">Current Password</label>
+        <input type="password" class="form-control" name="currentPassword" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">New Password</label>
+        <input type="password" class="form-control" name="newPassword" required minlength="6" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirm New Password</label>
+        <input type="password" class="form-control" name="confirmNewPassword" required minlength="6" />
+      </div>
+      <button type="submit" class="btn btn-primary">🔑 Change Password</button>
+    </form>
+
+    <hr />
+
+    <!-- Disable or Delete Account -->
+    <h2>Disable or Delete Account</h2>
+    <form action="/settings/disable" method="POST" onsubmit="return confirm('Are you sure you want to temporarily disable your account?')">
+      <button type="submit" class="btn btn-warning w-100 mb-2">⛔ Temporarily Disable Account</button>
+    </form>
+
+    <form action="/settings/delete" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete your account? This cannot be undone!')">
+      <button type="submit" class="btn btn-danger w-100">🗑️ Permanently Delete Account</button>
+    </form>
+
+  </div>
+
+  
+  
+</body>
+</html>

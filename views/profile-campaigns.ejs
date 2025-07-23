@@ -1,0 +1,25 @@
+<!-- profile-campaigns.ejs -->
+<h1><%= profileUser.name %> Campaigns</h1>
+
+<% if (campaigns.length > 0) { %>
+  <ul>
+    <% campaigns.forEach(function(campaign) { %>
+      <li>
+        <h3><%= campaign.campaignName %></h3>
+        <p><%= campaign.description %></p>
+        <p><strong>Target Audience:</strong> <%= campaign.targetAudience %></p>
+        <p><strong>Discount Code:</strong> <%= campaign.discountCode %></p>
+        <p><strong>Start Date:</strong> <%= campaign.startDate %></p>
+        <p><strong>End Date:</strong> <%= campaign.endDate %></p>
+      </li>
+    <% }) %>
+  </ul>
+<% } else { %>
+  <p>No campaigns found.</p>
+<% } %>
+
+
+<!-- رابط العودة إلى الحملات الخاصة بك إن كنت تتابع هذا المستخدم -->
+<% if (user && user._id.toString() === profileUser._id.toString()) { %>
+  <a href="/campaigns" class="btn btn-info">View All My Campaigns</a>
+<% } %>

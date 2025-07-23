@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Profile</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 32px;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    label {
+      font-weight: bold;
+      color: #444;
+    }
+    input, textarea, select {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+    textarea {
+      resize: vertical;
+    }
+    .profile-picture {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .profile-picture img {
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border: 3px solid #007bff;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .buttons button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .save-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .save-btn:hover {
+      background-color: #218838;
+    }
+    .cancel-btn {
+      background-color: #6c757d;
+      color: white;
+    }
+    .cancel-btn:hover {
+      background-color: #5a6268;
+    }
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      margin-top: 30px;
+      width: 100%;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 6px;
+    }
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+    .service-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 10px;
+    }
+    .service-item input {
+      flex: 1;
+    }
+    .service-item button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    .service-item button:hover {
+      background-color: #c82333;
+    }
+    #servicesContainer {
+      margin-top: 20px;
+    }
+
+    .cancel-btn.styled-link {
+  display: inline-block;
+  background-color: #f0f0f0;
+  color: #333;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn.styled-link:hover {
+  background-color: #e2e6ea;
+  color: #000;
+  border-color: #aaa;
+  text-decoration: none;
+}
+
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1>Edit Your Profile</h1>
+  <form action="/users/editProfile" method="POST" enctype="multipart/form-data">
+    <div class="profile-picture">
+      <img src="<%= user.avatar || '/default-avatar.png' %>" alt="Profile Picture">
+      <p>Change Profile Picture:</p>
+      <input type="file" name="avatar">
+    </div>
+
+    <label>Full Name:</label>
+    <input type="text" name="fullName" value="<%= user.fullName || '' %>">
+
+    <label>Email:</label>
+    <input type="email" name="email" value="<%= user.email || '' %>">
+
+    <label>Phone Number:</label>
+    <input type="text" name="phone" value="<%= user.phone || '' %>">
+
+    <label>Location:</label>
+    <input type="text" name="location" value="<%= user.location || '' %>">
+
+    <label>Date of Birth:</label>
+    <input type="date" name="dob" value="<%= user.dob ? user.dob.toISOString().split('T')[0] : '' %>">
+
+    <label>Gender:</label>
+    <select name="gender">
+      <option value="" <%= !user.gender ? 'selected' : '' %>>Choose</option>
+      <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>Male</option>
+      <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>Female</option>
+    </select>
+
+    <label>Bio:</label>
+    <textarea name="bio" rows="4"><%= user.bio || '' %></textarea>
+
+    <label>Social Links:</label>
+    <input type="url" name="tiktok" placeholder="TikTok" value="<%= user.links?.tiktok || '' %>">
+    <input type="url" name="instagram" placeholder="Instagram" value="<%= user.links?.instagram || '' %>">
+    <input type="url" name="github" placeholder="GitHub" value="<%= user.links?.github || '' %>">
+
+    <label>Services Offered:</label>
+    <div id="servicesContainer">
+      <% if (user.services && user.services.length > 0) { %>
+        <% user.services.forEach((service, index) => { %>
+          <div class="service-item" data-index="<%= index %>">
+            <input type="text" name="services[<%= index %>][name]" placeholder="Service Name" value="<%= service.name %>" required>
+            <input type="number" name="services[<%= index %>][price]" placeholder="Price" value="<%= service.price %>" required min="0">
+            <button type="button" onclick="removeService(this)">✖️</button>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="service-item" data-index="0">
+          <input type="text" name="services[0][name]" placeholder="Service Name" required>
+          <input type="number" name="services[0][price]" placeholder="Price" required min="0">
+          <button type="button" onclick="removeService(this)">✖️</button>
+        </div>
+      <% } %>
+    </div>
+    <button type="button" onclick="addService()">➕ Add New Service</button>
+
+    <div class="buttons">
+      <button type="submit" class="save-btn">Save Changes</button>
+<a href="/profile" class="cancel-btn styled-link">Cancel</a>
+    </div>
+  </form>
+
+  <form id="deleteForm" action="/users/delete" method="POST" onsubmit="return confirmDelete(event)">
+    <button type="submit" class="delete-btn">Delete Account Permanently</button>
+  </form>
+</div>
+
+<script>
+  let serviceCount = <%= (user.services ? user.services.length : 1) %>;
+
+  function addService() {
+    const container = document.getElementById('servicesContainer');
+    const div = document.createElement('div');
+    div.className = 'service-item';
+    div.dataset.index = serviceCount;
+    div.innerHTML = `
+      <input type="text" name="services[${serviceCount}][name]" placeholder="Service Name" required>
+      <input type="number" name="services[${serviceCount}][price]" placeholder="Price" required min="0">
+      <button type="button" onclick="removeService(this)">✖️</button>
+    `;
+    container.appendChild(div);
+    serviceCount++;
+  }
+
+  function removeService(button) {
+    const div = button.parentElement;
+    div.remove();
+  }
+
+  function confirmDelete(event) {
+    event.preventDefault();
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to recover your account after deletion!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        event.target.submit();
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campaigns</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    header {
+      background-color: #4CAF50;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    .campaigns {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .campaign {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .campaign:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .campaign h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .campaign p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      margin-top: 10px;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .campaign-detail {
+      font-size: 14px;
+      color: #888;
+    }
+  
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Your Campaigns</h1>
+  </header>
+
+  <main>
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="/campaigns/create-campaign" class="btn">Create New Campaign</a>
+    </div>
+
+    <div class="campaigns">
+  <% campaigns.forEach(campaign => { %>
+    <% if (campaign.creator.toString() === user._id.toString()) { %> <!-- تحقق من أن المستخدم هو المالك -->
+      <div class="campaign">
+        <h2><%= campaign.campaignName %> by <%= campaign.companyName %></h2>
+        <p><%= campaign.description %></p>
+        <p><strong>Target Audience:</strong> <%= campaign.targetAudience.join(', ') %></p>
+        <p><strong>Discount Code:</strong> <%= campaign.discountCode %></p>
+        <p><strong>Start Date:</strong> <%= new Date(campaign.startDate).toLocaleDateString() %></p>
+        <p><strong>End Date:</strong> <%= new Date(campaign.endDate).toLocaleDateString() %></p>
+        <a href="/campaigns/<%= campaign._id %>">View Details</a>
+      </div>
+    <% } %>
+  <% }) %>
+</div>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<div class="modal fade" id="personalModal" tabindex="-1" aria-labelledby="personalModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">📄 المعلومات الشخصية</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+      </div>
+      <div class="modal-body text-start">
+        <p><strong>الاسم:</strong> <%= profileUser.fullName || 'غير محدد' %></p>
+        <p><strong>البريد:</strong> <%= profileUser.email || 'غير محدد' %></p>
+        <p><strong>الهاتف:</strong> <%= profileUser.phone || 'غير محدد' %></p>
+        <p><strong>الموقع:</strong> <%= profileUser.location || 'غير محدد' %></p>
+        <p><strong>تاريخ الميلاد:</strong> <%= profileUser.dob ? profileUser.dob.toDateString() : 'غير محدد' %></p>
+        <p><strong>الجنس:</strong> 
+          <%= profileUser.gender === 'male' ? 'ذكر' : profileUser.gender === 'female' ? 'أنثى' : 'غير محدد' %>
+        </p>
+        <p><strong>نبذة:</strong> <%= profileUser.bio || 'لا توجد نبذة' %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="socialModal" tabindex="-1" aria-labelledby="socialModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🌐 روابط التواصل</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+      </div>
+      <div class="modal-body text-start">
+        <% if (profileUser.links?.tiktok) { %>
+          <p><i class="bi bi-tiktok"></i> <a href="<%= profileUser.links.tiktok %>" target="_blank">TikTok</a></p>
+        <% } %>
+        <% if (profileUser.links?.instagram) { %>
+          <p><i class="bi bi-instagram"></i> <a href="<%= profileUser.links.instagram %>" target="_blank">Instagram</a></p>
+        <% } %>
+        <% if (profileUser.links?.github) { %>
+          <p><i class="bi bi-github"></i> <a href="<%= profileUser.links.github %>" target="_blank">GitHub</a></p>
+        <% } %>
+        <% if (!profileUser.links || (!profileUser.links.tiktok && !profileUser.links.instagram && !profileUser.links.github)) { %>
+          <p>لا توجد روابط.</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

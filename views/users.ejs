@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>قائمة المستخدمين</title>
+</head>
+<body>
+  <h2>قائمة المستخدمين</h2>
+  <ul id="userList"></ul>
+
+  <script>
+    async function fetchUsers() {
+      const response = await fetch('http://localhost:5000/api/users');
+      const users = await response.json();
+      
+      const userList = document.getElementById('userList');
+      users.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = `اسم المستخدم: ${user.username} - البريد الإلكتروني: ${user.email}`;
+        userList.appendChild(li);
+      });
+    }
+
+    fetchUsers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <% layout = false %> <!-- منع استخدام layout إذا أردت -->
+  <title>منشور من <%= post.user.username %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { background: #fafafa; font-family: Arial, sans-serif; padding-bottom: 70px; }
+    .post-container { max-width: 600px; margin: 30px auto; background: white; border: 1px solid #ddd; border-radius: 10px; }
+    .post-header, .post-footer { padding: 10px; display: flex; align-items: center; }
+    .post-header img { width: 40px; height: 40px; border-radius: 50%; margin-left: 10px; }
+    .post-image { width: 100%; height: auto; border-bottom: 1px solid #eee; }
+    .btn-like, .btn-comment, .btn-bookmark { cursor: pointer; font-size: 20px; margin-right: 10px; }
+    .stats { font-size: 14px; margin: 10px; font-weight: bold; }
+    canvas { max-width: 100%; display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+
+<div class="post-container">
+  <div class="post-header">
+    <a href="/users/<%= post.user._id %>">
+      <img src="<%= post.user.avatar || '/default-avatar.png' %>" alt="avatar">
+    </a>
+    <strong><%= post.user.username %></strong>
+  </div>
+
+  <% if (post.image) { %>
+    <img src="<%= post.image %>" class="post-image" alt="Post Image">
+  <% } %>
+
+  <div class="post-footer">
+    <div class="d-flex align-items-center">
+      <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like"></i>
+      <i class="bi bi-chat btn-comment"></i>
+      <% if (currentUser) { %>
+        <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark"></i>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="stats">
+    <span><%= post.likes.length %> إعجاب</span> |
+    <span><%= post.comments.length %> تعليق</span>
+  </div>
+
+  <div class="px-3 pb-3">
+    <strong><%= post.user.username %></strong> <%= post.caption %>
+  </div>
+
+  <div class="px-3 pb-3">
+    <% post.comments.forEach(c => { %>
+      <p><strong><%= c.user.username %>:</strong> <%= c.text %></p>
+    <% }) %>
+  </div>
+
+  <% if (currentUser) { %>
+    <form class="px-3 pb-3" id="comment-form">
+      <div class="input-group">
+        <input type="text" name="text" class="form-control" placeholder="أضف تعليق..." required>
+        <button class="btn btn-primary" type="submit">نشر</button>
+      </div>
+    </form>
+  <% } else { %>
+    <p class="text-center text-muted pb-3">سجّل الدخول للتعليق.</p>
+  <% } %>
+
+  <% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %>
+    <canvas id="analytics-chart" height="150"></canvas>
+  <% } %>
+</div>
+
+<% if (currentUser) { %>
+  <div class="bottom-nav d-lg-none position-fixed bottom-0 w-100 bg-white border-top py-2 d-flex justify-content-around">
+    <a href="/"><i class="bi bi-house-door-fill"></i><br>الرئيسية</a>
+    <a href="/posts/new"><i class="bi bi-plus-square-fill"></i><br>جديد</a>
+    <a href="/users/<%= currentUser._id %>"><i class="bi bi-person-circle"></i><br>حسابي</a>
+  </div>
+<% } %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  <% if (currentUser) { %>
+    socket.emit('register', '<%= currentUser._id %>');
+    socket.on('newNotification', data => alert(data.message));
+  <% } %>
+
+  document.querySelector('.btn-like').addEventListener('click', async () => {
+    const res = await fetch('/posts/like/<%= post._id %>', { method: 'POST' });
+    const data = await res.json();
+    location.reload();
+  });
+
+  <% if (currentUser) { %>
+    document.querySelector('.btn-bookmark').addEventListener('click', async () => {
+      await fetch('/posts/bookmark/<%= post._id %>', { method: 'POST' });
+      location.reload();
+    });
+
+    document.getElementById('comment-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const text = e.target.text.value.trim();
+      if (!text) return;
+      await fetch('/posts/comment/<%= post._id %>', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ text })
+      });
+      location.reload();
+    });
+  <% } %>
+
+  <% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %>
+    const ctx = document.getElementById('analytics-chart').getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['إعجابات', 'تعليقات'],
+        datasets: [{ data: [<%= post.likes.length %>, <%= post.comments.length %>], backgroundColor: ['#dc3545', '#0d6efd'] }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+  <% } %>
+
+</script>
+</body>
+</html>

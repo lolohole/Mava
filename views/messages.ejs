@@ -1,0 +1,24 @@
+
+<div class="container py-4">
+  <h2>📨 الرسائل</h2>
+  <div class="list-group">
+    <% if (chats.length === 0) { %>
+      <p>لا توجد محادثات بعد.</p>
+    <% } else { %>
+      <% chats.forEach(chat => { %>
+             <a href="/chat/<%= user._id %>">الدردشة</a>
+
+          <img src="<%= chat.user.avatar || '/default-avatar.png' %>" width="40" height="40" class="rounded-circle me-3">
+          <div>
+            <div><strong><%= chat.user.username %></strong></div>
+            <div class="small text-muted text-truncate" style="max-width: 200px;">
+              <%= chat.message %>
+            </div>
+          </div>
+          <div class="ms-auto small text-muted"><%= new Date(chat.time).toLocaleTimeString() %></div>
+        </a>
+      <% }) %>
+    <% } %>
+  </div>
+</div>
+

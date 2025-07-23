@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="container py-4">
+  <h3 class="mb-4">محادثاتك</h3>
+  <% if (chats.length === 0) { %>
+    <p class="text-muted">لا توجد محادثات حتى الآن.</p>
+  <% } else { %>
+    <ul class="list-group">
+      <% chats.forEach(chat => { %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="/messages/chat/<%= chat.user._id %>">
+            <strong><%= chat.user.username %></strong>
+            <div class="text-muted small"><%= chat.message %></div>
+          </a>
+          <span class="text-muted small"><%= new Date(chat.time).toLocaleTimeString() %></span>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  socket.emit('register', '<%= currentUser._id %>');
+
+  socket.on('newMessage', data => {
+    if (data.receiverId === '<%= currentUser._id %>') {
+      window.location.reload();
+    }
+  });
+
+    socket.emit('register', '<%= currentUser._id %>');
+
+</script>
+
+
+<%- include('../partials/footer') %>

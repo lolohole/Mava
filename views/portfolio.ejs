@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Portfolio</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  
+
+  <div class="container">
+    <div class="card">
+      <img src="/images/profile.jpg" alt="My Photo" class="profile-img">
+      <h1>Basem Halaika</h1>
+      <p class="title">Full Stack Developer</p>
+      <p>I am a passionate developer with experience in building modern web applications using Node.js, Express, MongoDB, and more.</p>
+      <div class="skills">
+        <h3>Skills</h3>
+        <ul>
+          <li>JavaScript / Node.js</li>
+          <li>MongoDB / Mongoose</li>
+          <li>HTML / CSS / EJS</li>
+          <li>RESTful APIs</li>
+        </ul>
+      </div>
+      <div class="social">
+        <a href="mailto:basemhalaika@gmail.com">Email</a>
+        <a href="https://www.linkedin.com/in/basm-halaika-060944242/" target="_blank">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+  <style>
+    body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 180vh;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-img {
+  display: block;
+  width: 150px;
+  height: 150px;
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 20px auto;
+}
+
+.title {
+  color: gray;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.skills ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+.skills li {
+  padding: 5px 0;
+}
+
+.social a {
+  margin: 10px;
+  text-decoration: none;
+  color: #007BFF;
+  font-weight: bold;
+}
+
+.social a:hover {
+  text-decoration: underline;
+}
+
+  </style>
+</body>
+</html>
