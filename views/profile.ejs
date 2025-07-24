@@ -365,7 +365,7 @@
       <div class="modal-body text-start">
         <% if (profileUser.services?.length > 0) { %>
           <% profileUser.services.forEach(service => { %>
-            <p><strong><%= service.name %>:</strong> <%= service.price %></p>
+            <p><strong><%= service.name %>:</strong> <%= service.description %></p>
             <button type="button" class="btn btn-sm btn-outline-danger" 
                     data-bs-toggle="modal" data-bs-target="#requestModal"
                     onclick="setServiceId('<%= service._id %>', '<%= service.name %>')">Request Now</button>
