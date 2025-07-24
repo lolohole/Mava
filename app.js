@@ -25,35 +25,6 @@ const sentiment = new Sentiment();
 
 // لإدارة sockets المستخدمين
 const userSockets = new Map();
-const redis = require('redis');
-
-const client = redis.createClient({
-  url: process.env.REDIS_URL   // مهم جداً
-});
-
-client.connect()
-  .then(() => console.log('✅ Connected to Redis'))
-  .catch(err => console.error('❌ Redis error:', err));
-
-
-
-// رسائل الأحداث
-client.on('connect', () => {
-  console.log('✅ Connected to Redis Cloud!');
-});
-
-client.on('error', (err) => {
-  console.error('❌ Redis connection error:', err);
-});
-
-// تصدير العميل لاستخدامه في ملفات أخرى
-module.exports = client;
-
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-
-redisClient.connect();
-
-app.set('redisClient', redisClient);
 
 // إعداد EJS
 app.set('view engine', 'ejs');
@@ -64,7 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-
 
 // الجلسة
 app.use(session({
@@ -118,7 +88,6 @@ const notificationRoutes = require('./routes/notifications');
 const campaignsRouter = require('./routes/campaigns');
 const contactRouter = require('./routes/contact');
 const profileCampaignsRouter = require('./routes/profile-campaigns');
-// Use the contact routes
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
@@ -132,8 +101,6 @@ app.use('/', notificationRoutes);
 app.use('/campaigns', campaignsRouter);
 app.use('/contact', contactRouter);
 app.use('/profile-campaigns', profileCampaignsRouter);
-
-
 
 // صفحة البروفايل
 app.get('/profile/:id', async (req, res) => {
@@ -218,7 +185,6 @@ app.post('/comment/:postId', authMiddleware, async (req, res) => {
   }
 });
 
-
 // ✅✅ Socket.IO Logic
 io.on('connection', (socket) => {
   console.log('🟢 مستخدم متصل عبر Socket.IO');
@@ -281,9 +247,6 @@ io.on('connection', (socket) => {
 
 // تشغيل السيرفر
 const port = process.env.PORT || 5000;
-
 server.listen(port, () => {
   console.log(`✅ Server running on port ${port}`);
 });
-
-
