@@ -246,12 +246,22 @@
           </div>
 
           <div class="post-caption">
-            <strong><%= post.user.username %></strong> <%= post.caption %>
+            <% if (post.user) { %>
+  <strong><%= post.user.username %></strong> <%= post.caption %>
+<% } else { %>
+  <strong>مستخدم غير معروف</strong> <%= post.caption %>
+<% } %>
+
           </div>
 
          <div class="comments-section">
   <% post.comments.slice(0, 3).forEach(comment => { %>  <!-- عرض أول 3 تعليقات فقط -->
-    <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
+   <% if (comment.user) { %>
+  <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
+<% } else { %>
+  <p><strong>مستخدم غير معروف:</strong> <%= comment.text %></p>
+<% } %>
+
   <% }) %>
 
   <% if (post.comments.length > 3) { %>
