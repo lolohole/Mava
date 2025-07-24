@@ -205,7 +205,18 @@
   <strong>مستخدم غير معروف</strong>
 <% } %>
 
-            <strong><%= post.user.username %></strong>
+         <% if (post.user) { %>
+  <a href="/users/<%= post.user._id %>">
+    <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
+  </a>
+  <strong><%= post.user.username %></strong>
+<% } else { %>
+  <a href="#">
+    <img src="/default-avatar.png" />
+  </a>
+  <strong>مستخدم غير معروف</strong>
+<% } %>
+
           </div>
 
           <img class="post-image" src="<%= post.image %>" alt="Post Image" />
