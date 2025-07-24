@@ -7,23 +7,40 @@ const auth = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'public/uploads/posts/'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// إعداد Cloudinary
+cloudinary.config({
+  cloud_name: 'djsi7vcsl',  // استبدلها بـ cloud_name الخاص بك من Cloudinary
+  api_key: '616254387969826',        // استبدلها بـ api_key الخاص بك من Cloudinary
+  api_secret: 'F1uc2OzqIRqOWNKAzzkfBNV1ERM'   // استبدلها بـ api_secret الخاص بك من Cloudinary
 });
+
+// إعداد multer لاستخدام Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'posts',  // استبدلها باسم المجلد الذي تريد تخزين الصور فيه في Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }] // لتحديد الحجم والتصفية
+  },
+});
+
 const upload = multer({ storage });
 
 router.get('/new', auth, (req, res) => {
-  res.render('createPost', {layout: false,});
+  res.render('createPost', {layout: false});
 });
 
 router.post('/add', auth, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'الصورة مطلوبة' });
 
+    // استبدال المسار المحلي بالصورة المخزنة على Cloudinary
     const post = new Post({
       user: req.user._id,
-      image: '/uploads/posts/' + req.file.filename,
+      image: req.file.path, // يحتوي على URL من Cloudinary
       caption: req.body.caption || ''
     });
 
@@ -70,25 +87,24 @@ router.post('/like/:id', auth, async (req, res) => {
       post.likes.push(userId);
 
       if (!targetUser._id.equals(currentUser._id)) {
-  const notif = new Notification({
-    recipient: targetUser._id,
-    user: currentUser._id,
-    type: 'like',
-    post: post._id,
-    isRead: false,
-    message: `${currentUser.username}  Like your post`
-  });
-  await notif.save();
+        const notif = new Notification({
+          recipient: targetUser._id,
+          user: currentUser._id,
+          type: 'like',
+          post: post._id,
+          isRead: false,
+          message: `${currentUser.username}  Like your post`
+        });
+        await notif.save();
 
-  const io = req.app.get('io');
-  if (io) {
-    io.to(targetUser._id.toString()).emit('newNotification', {
-      type: 'like',
-      message: `${currentUser.username}  Like your post`
-    });
-  }
-}
-
+        const io = req.app.get('io');
+        if (io) {
+          io.to(targetUser._id.toString()).emit('newNotification', {
+            type: 'like',
+            message: `${currentUser.username}  Like your post`
+          });
+        }
+      }
     }
 
     await post.save();
@@ -98,7 +114,6 @@ router.post('/like/:id', auth, async (req, res) => {
     res.status(500).json({ error: 'Error updating likes' });
   }
 });
-
 router.post('/comment/:id', auth, async (req, res) => {
   try {
     const { text } = req.body;
