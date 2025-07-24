@@ -136,20 +136,20 @@ router.post('/editProfile', auth, upload.single('avatar'), async (req, res) => {
     }
 
     const updateData = {
-      fullName: req.body.fullName,
-      email: req.body.email,
-      phone: req.body.phone,
-      location: req.body.location,
-      dob: req.body.dob ? new Date(req.body.dob) : null,
-      gender: req.body.gender,
-      bio: req.body.bio,
-      links: {
-        tiktok: req.body['links[tiktok]'] || req.body.tiktok || '',
-        instagram: req.body['links[instagram]'] || req.body.instagram || '',
-        github: req.body['links[github]'] || req.body.github || ''
-      },
-      services: services
-    };
+  fullName: req.body.fullName || '',  // إذا كانت القيمة فارغة، تعيين قيمة فارغة
+  email: req.body.email || '',  // نفس الشيء هنا
+  phone: req.body.phone || '',  // إذا كانت القيمة فارغة، تعيين قيمة فارغة
+  location: req.body.location || '',  // تعيين قيمة فارغة إذا لم يكن هناك موقع
+  dob: req.body.dob ? new Date(req.body.dob) : null,  // إذا كانت قيمة dob موجودة، حولها إلى تاريخ، وإذا لم تكن فارغة يتم تعيين null
+  gender: ['male', 'female', 'other'].includes(req.body.gender) ? req.body.gender : 'other',  // تأكد أن القيمة ضمن القيم المحددة (male, female, other) وإلا تعيين قيمة 'other'
+  bio: req.body.bio || '',  // تعيين قيمة فارغة إذا لم تكن bio موجودة
+  links: {
+    tiktok: req.body['links[tiktok]'] || req.body.tiktok || '',  // تعيين قيمة فارغة إذا لم تكن موجودة
+    instagram: req.body['links[instagram]'] || req.body.instagram || '',  // نفس الشيء
+    github: req.body['links[github]'] || req.body.github || ''  // نفس الشيء
+  },
+  services: services || []  // إذا لم تكن الخدمات موجودة، تعيين قيمة فارغة كمصفوفة
+};
 
     if (req.file) {
       updateData.avatar = `/uploads/${req.file.filename}`;
