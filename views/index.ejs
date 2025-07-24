@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -193,30 +195,10 @@
       <% posts.forEach(post => { %>
         <div class="post-card" data-post-id="<%= post._id %>">
           <div class="post-header">
-           <% if (post.user) { %>
-  <a href="/users/<%= post.user._id %>">
-    <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
-  </a>
-  <strong><%= post.user.username %></strong>
-<% } else { %>
-  <a href="#">
-    <img src="/default-avatar.png" />
-  </a>
-  <strong>مستخدم غير معروف</strong>
-<% } %>
-
-         <% if (post.user) { %>
-  <a href="/users/<%= post.user._id %>">
-    <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
-  </a>
-  <strong><%= post.user.username %></strong>
-<% } else { %>
-  <a href="#">
-    <img src="/default-avatar.png" />
-  </a>
-  <strong>مستخدم غير معروف</strong>
-<% } %>
-
+            <a href="/users/<%= post.user._id %>">
+              <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
+            </a>
+            <strong><%= post.user.username %></strong>
           </div>
 
           <img class="post-image" src="<%= post.image %>" alt="Post Image" />
@@ -246,22 +228,12 @@
           </div>
 
           <div class="post-caption">
-            <% if (post.user) { %>
-  <strong><%= post.user.username %></strong> <%= post.caption %>
-<% } else { %>
-  <strong>مستخدم غير معروف</strong> <%= post.caption %>
-<% } %>
-
+            <strong><%= post.user.username %></strong> <%= post.caption %>
           </div>
 
          <div class="comments-section">
   <% post.comments.slice(0, 3).forEach(comment => { %>  <!-- عرض أول 3 تعليقات فقط -->
-   <% if (comment.user) { %>
-  <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
-<% } else { %>
-  <p><strong>مستخدم غير معروف:</strong> <%= comment.text %></p>
-<% } %>
-
+    <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
   <% }) %>
 
   <% if (post.comments.length > 3) { %>
