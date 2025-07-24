@@ -26,17 +26,15 @@ const sentiment = new Sentiment();
 // لإدارة sockets المستخدمين
 const userSockets = new Map();
 const redis = require('redis');
-const redisClient = redis.createClient();
 
-// إنشاء اتصال بـ Redis Cloud باستخدام الرابط الذي زودتني به
 const client = redis.createClient({
-  url: process.env.REDIS_URL
+  url: process.env.REDIS_URL   // مهم جداً
 });
 
 client.connect()
   .then(() => console.log('✅ Connected to Redis'))
-  .catch(err => console.error('❌ Redis connection error:', err));
-// بدء الاتصال
+  .catch(err => console.error('❌ Redis error:', err));
+
 
 
 // رسائل الأحداث
