@@ -30,11 +30,14 @@ const redisClient = redis.createClient();
 
 // إنشاء اتصال بـ Redis Cloud باستخدام الرابط الذي زودتني به
 const client = redis.createClient({
-  url: 'redis://default:yzFXpSqJ2dNRrZqXmOzPzxor3Z9d8QuY@redis-13978.c92.us-east-1-3.ec2.redns.redis-cloud.com:13978'
+  url: process.env.REDIS_URL
 });
 
+client.connect()
+  .then(() => console.log('✅ Connected to Redis'))
+  .catch(err => console.error('❌ Redis connection error:', err));
 // بدء الاتصال
-client.connect();
+
 
 // رسائل الأحداث
 client.on('connect', () => {
