@@ -8,11 +8,28 @@ const auth = require('../middlewares/authMiddleware');
 const Notification = require('../models/Notification');
 
 // إعداد multer لتخزين الصور
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'public/uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// إعداد Cloudinary
+cloudinary.config({
+  cloud_name: 'YOUR_CLOUD_NAME',
+  api_key: 'YOUR_API_KEY',
+  api_secret: 'YOUR_API_SECRET'
 });
+
+// إعداد multer لاستخدام Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'your-folder-name', // اسم مجلد التخزين في Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }]
+  },
+});
+
 const upload = multer({ storage });
+
 
 
 // ✅ 1. الملف الشخصي للمستخدم الحالي
@@ -136,23 +153,24 @@ router.post('/editProfile', auth, upload.single('avatar'), async (req, res) => {
     }
 
     const updateData = {
-      fullName: req.body.fullName,
-      email: req.body.email,
-      phone: req.body.phone,
-      location: req.body.location,
+      fullName: req.body.fullName || '',
+      email: req.body.email || '',
+      phone: req.body.phone || '',
+      location: req.body.location || '',
       dob: req.body.dob ? new Date(req.body.dob) : null,
-      gender: req.body.gender,
-      bio: req.body.bio,
+      gender: ['male', 'female', 'other'].includes(req.body.gender) ? req.body.gender : 'other',
+      bio: req.body.bio || '',
       links: {
         tiktok: req.body['links[tiktok]'] || req.body.tiktok || '',
         instagram: req.body['links[instagram]'] || req.body.instagram || '',
         github: req.body['links[github]'] || req.body.github || ''
       },
-      services: services
+      services: services || []
     };
 
-    if (req.file) {
-      updateData.avatar = `/uploads/${req.file.filename}`;
+    if (req.file && req.file.path) {
+      // هنا نستخدم رابط الصورة من Cloudinary (path يحتوي على URL)
+      updateData.avatar = req.file.path;
     }
 
     await User.findByIdAndUpdate(req.user._id, updateData, { new: true, runValidators: true });
@@ -162,7 +180,6 @@ router.post('/editProfile', auth, upload.single('avatar'), async (req, res) => {
     res.status(500).send('Failed to update data');
   }
 });
-
 
 /// ✅ 5. متابعة / إلغاء متابعة
 router.post('/follow/:id', auth, async (req, res) => {
