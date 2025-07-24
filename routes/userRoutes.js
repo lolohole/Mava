@@ -7,26 +7,11 @@ const path = require('path');
 const auth = require('../middlewares/authMiddleware');
 const Notification = require('../models/Notification');
 
-const cloudinary = require('cloudinary');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-
-// إعداد Cloudinary
-cloudinary.config({
-  cloud_name: 'djsi7vcsl',
-  api_key: '616254387969826',
-  api_secret: 'F1uc2OzqIRqOWNKAzzkfBNV1ERM'
+// إعداد multer لتخزين الصور
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'public/uploads/'),
+  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
-
-// إعداد multer لاستخدام Cloudinary storage
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'profile-pichre', // اسم مجلد التخزين في Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }]
-  },
-});
-
 const upload = multer({ storage });
 
 
@@ -151,24 +136,23 @@ router.post('/editProfile', auth, upload.single('avatar'), async (req, res) => {
     }
 
     const updateData = {
-      fullName: req.body.fullName || '',
-      email: req.body.email || '',
-      phone: req.body.phone || '',
-      location: req.body.location || '',
+      fullName: req.body.fullName,
+      email: req.body.email,
+      phone: req.body.phone,
+      location: req.body.location,
       dob: req.body.dob ? new Date(req.body.dob) : null,
-      gender: ['male', 'female', 'other'].includes(req.body.gender) ? req.body.gender : 'other',
-      bio: req.body.bio || '',
+      gender: req.body.gender,
+      bio: req.body.bio,
       links: {
         tiktok: req.body['links[tiktok]'] || req.body.tiktok || '',
         instagram: req.body['links[instagram]'] || req.body.instagram || '',
         github: req.body['links[github]'] || req.body.github || ''
       },
-      services: services || []
+      services: services
     };
 
-    if (req.file && req.file.path) {
-      // هنا نستخدم رابط الصورة من Cloudinary (path يحتوي على URL)
-      updateData.avatar = req.file.path;
+    if (req.file) {
+      updateData.avatar = `/uploads/${req.file.filename}`;
     }
 
     await User.findByIdAndUpdate(req.user._id, updateData, { new: true, runValidators: true });
