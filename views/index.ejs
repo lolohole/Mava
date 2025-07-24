@@ -193,9 +193,18 @@
       <% posts.forEach(post => { %>
         <div class="post-card" data-post-id="<%= post._id %>">
           <div class="post-header">
-            <a href="/users/<%= post.user._id %>">
-              <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
-            </a>
+           <% if (post.user) { %>
+  <a href="/users/<%= post.user._id %>">
+    <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
+  </a>
+  <strong><%= post.user.username %></strong>
+<% } else { %>
+  <a href="#">
+    <img src="/default-avatar.png" />
+  </a>
+  <strong>مستخدم غير معروف</strong>
+<% } %>
+
             <strong><%= post.user.username %></strong>
           </div>
 
