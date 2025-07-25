@@ -5,6 +5,7 @@ const orderSchema = new mongoose.Schema({
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   buyerUsername: { type: String, required: true },
   sellerUsername: { type: String, required: true },
+      buyerEmail: { type: String, required: true }, // ✅ إضافة الإيميل
 
   productName: { type: String, required: true },          // اسم المنتج
   productDescription: { type: String, required: true },   // وصف المنتج المطلوب (في الفورم: details)
