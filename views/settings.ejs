@@ -1,0 +1,42 @@
+<form id="themeForm">
+  <div>
+    <label>Post background:</label>
+    <input type="color" name="postBgColor" value="<%= currentUser.themeSettings.postBgColor %>">
+  </div>
+  <div><label>Post text:</label><input type="color" name="postTextColor" value="<%= currentUser.themeSettings.postTextColor %>"></div>
+  <div><label>Chat background:</label><input type="color" name="chatBgColor" value="<%= currentUser.themeSettings.chatBgColor %>"></div>
+  <div><label>Chat text:</label><input type="color" name="chatTextColor" value="<%= currentUser.themeSettings.chatTextColor %>"></div>
+  <div><label>Notifications color:</label><input type="color" name="notificationColor" value="<%= currentUser.themeSettings.notificationColor %>"></div>
+  <div><label>Saved posts background:</label><input type="color" name="savedPostsBgColor" value="<%= currentUser.themeSettings.savedPostsBgColor %>"></div>
+  <button type="submit">Save Theme</button>
+</form>
+
+<script>
+  const form = document.getElementById('themeForm');
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    const res = await fetch('/settings/update-theme', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (json.success) {
+      alert('Saved!');
+      applyTheme(json.themeSettings);
+    } else alert('Error');
+  });
+
+  function applyTheme(t) {
+    document.documentElement.style.setProperty('--post-bg', t.postBgColor);
+    document.documentElement.style.setProperty('--post-text', t.postTextColor);
+    document.documentElement.style.setProperty('--chat-bg', t.chatBgColor);
+    document.documentElement.style.setProperty('--chat-text', t.chatTextColor);
+    document.documentElement.style.setProperty('--notif-color', t.notificationColor);
+    document.documentElement.style.setProperty('--saved-bg', t.savedPostsBgColor);
+  }
+
+  // عند التحميل المبدئي
+  applyTheme(<%- JSON.stringify(currentUser.themeSettings) %>);
+</script>
