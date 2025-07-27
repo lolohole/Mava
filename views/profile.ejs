@@ -863,6 +863,13 @@
     showRandomCanvas();
     setInterval(showRandomCanvas, 10000); // كل 10 ثواني
   </script>
+<script>
+  const socket = io(); // الاتصال بالسيرفر
 
+  <% if (currentUser) { %>
+    // إرسال ID المستخدم للسيرفر لتحديث الحالة
+    socket.emit('register', "<%= currentUser._id %>");
+  <% } %>
+</script>
 </body>
 </html>
