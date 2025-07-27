@@ -1,0 +1,139 @@
+<div class="container mt-4">
+  <h2>📌 Saved Posts</h2>
+   <style>
+    :root {
+  --post-bg-color: #ffffff;
+  --post-text-color: #000000;
+  --chat-bg-color: #f5f5f5;
+  --chat-text-color: #000000;
+  --notification-color: #ffeb3b;
+  --saved-posts-bg-color: #e0e0e0;
+}
+
+.post-card {
+  background-color: var(--post-bg-color);
+  color: var(--post-text-color);
+}
+
+.chat-box {
+  background-color: var(--chat-bg-color);
+  color: var(--chat-text-color);
+}
+
+.notification {
+  background-color: var(--notification-color);
+}
+
+.saved-post {
+  background-color: var(--saved-posts-bg-color);
+}
+
+   </style>
+  <% if (savedPosts.length === 0) { %>
+    <p>You haven't saved any posts yet.</p>
+  <% } else { %>
+    <div class="row"  >
+      <% savedPosts.forEach(post => { %>
+        <div class="col-md-6 mb-3">
+          <div class="card">
+            <% if (post.image) { %>
+              <a href="/posts/<%= post._id %>">
+                <img src="<%= post.image %>" class="card-img-top" alt="Post Image">
+              </a>
+            <% } %>
+            <div class="card-body" class="saved-post">
+              <h5 class="card-title">
+                <a href="/posts/<%= post._id %>"><%= post.title %></a>
+              </h5>
+              <p class="card-text"><%= post.caption.substring(0, 100) %>...</p>
+              <a href="/posts/<%= post._id %>" class="btn btn-outline-primary btn-sm">View Post</a>
+
+              <!-- Unsave Button -->
+              <form class="save-post-form d-inline-block float-end" data-post-id="<%= post._id %>">
+                <button type="submit" class="save-btn saved">🗑 Unsave</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<style>
+  .save-btn {
+    background-color: #eee;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .save-btn.saved {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .card-title a {
+    text-decoration: none;
+    color: #000;
+  }
+
+  .card-title a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.save-post-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const postId = form.getAttribute('data-post-id');
+      const button = form.querySelector('button');
+
+      try {
+        const response = await fetch(`/posts/unsavePost/${postId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          // Remove the post card from the page after unsaving
+          form.closest('.col-md-6').remove();
+        } else {
+          alert(result.message || 'An error occurred while unsaving the post.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Could not unsave the post. Please try again later.');
+      }
+    });
+  });
+
+
+
+
+
+
+
+
+
+</script>
+<script>
+  // When the services modal is closed, remove the backdrop
+  $('#servicesModal').on('hidden.bs.modal', function () {
+    $('.modal-backdrop').remove(); // This will remove the backdrop from the page
+  });
+</script>
+
+<script>
+  const theme = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+
+  for (const [key, val] of Object.entries(theme)) {
+    document.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, "-$1").toLowerCase(), val);
+  }
+</script>
+
