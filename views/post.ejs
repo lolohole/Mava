@@ -1,21 +1,34 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <% layout = false %> <!-- منع استخدام layout إذا أردت -->
-  <title>منشور من <%= post.user.username %></title>
+  <% layout = false %>
+  <title>Post by <%= post.user.username %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body { background: #fafafa; font-family: Arial, sans-serif; padding-bottom: 70px; }
     .post-container { max-width: 600px; margin: 30px auto; background: white; border: 1px solid #ddd; border-radius: 10px; }
     .post-header, .post-footer { padding: 10px; display: flex; align-items: center; }
-    .post-header img { width: 40px; height: 40px; border-radius: 50%; margin-left: 10px; }
+    .post-header img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
     .post-image { width: 100%; height: auto; border-bottom: 1px solid #eee; }
     .btn-like, .btn-comment, .btn-bookmark { cursor: pointer; font-size: 20px; margin-right: 10px; }
     .stats { font-size: 14px; margin: 10px; font-weight: bold; }
     canvas { max-width: 100%; display: block; margin: 20px auto; }
+
+    .save-btn {
+      background-color: #eee;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .save-btn.saved {
+      background-color: #28a745;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -43,8 +56,15 @@
   </div>
 
   <div class="stats">
-    <span><%= post.likes.length %> إعجاب</span> |
-    <span><%= post.comments.length %> تعليق</span>
+    <span><%= post.likes.length %> Likes</span> |
+    <span><%= post.comments.length %> Comments</span>
+    <form class="save-post-form" data-post-id="<%= post._id %>">
+      <% if (currentUser && currentUser.savedPosts && currentUser.savedPosts.includes(post._id.toString())) { %>
+        <button type="submit" class="save-btn saved">🗑 Remove Saved</button>
+      <% } else { %>
+        <button type="submit" class="save-btn">💾 Save</button>
+      <% } %>
+    </form>
   </div>
 
   <div class="px-3 pb-3">
@@ -60,12 +80,12 @@
   <% if (currentUser) { %>
     <form class="px-3 pb-3" id="comment-form">
       <div class="input-group">
-        <input type="text" name="text" class="form-control" placeholder="أضف تعليق..." required>
-        <button class="btn btn-primary" type="submit">نشر</button>
+        <input type="text" name="text" class="form-control" placeholder="Add a comment..." required>
+        <button class="btn btn-primary" type="submit">Post</button>
       </div>
     </form>
   <% } else { %>
-    <p class="text-center text-muted pb-3">سجّل الدخول للتعليق.</p>
+    <p class="text-center text-muted pb-3">Login to comment.</p>
   <% } %>
 
   <% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %>
@@ -75,15 +95,53 @@
 
 <% if (currentUser) { %>
   <div class="bottom-nav d-lg-none position-fixed bottom-0 w-100 bg-white border-top py-2 d-flex justify-content-around">
-    <a href="/"><i class="bi bi-house-door-fill"></i><br>الرئيسية</a>
-    <a href="/posts/new"><i class="bi bi-plus-square-fill"></i><br>جديد</a>
-    <a href="/users/<%= currentUser._id %>"><i class="bi bi-person-circle"></i><br>حسابي</a>
+    <a href="/"><i class="bi bi-house-door-fill"></i><br>Home</a>
+    <a href="/posts/new"><i class="bi bi-plus-square-fill"></i><br>New</a>
+    <a href="/users/<%= currentUser._id %>"><i class="bi bi-person-circle"></i><br>Profile</a>
   </div>
 <% } %>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+
+<script>
+  document.querySelectorAll('.save-post-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const postId = form.getAttribute('data-post-id');
+      const button = form.querySelector('button');
+      const isSaved = button.classList.contains('saved');
+
+      try {
+        const response = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (isSaved) {
+            button.classList.remove('saved');
+            button.textContent = '💾 Save';
+          } else {
+            button.classList.add('saved');
+            button.textContent = '🗑 Remove Saved';
+          }
+        } else {
+          alert(result.message || 'An error occurred while saving.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Unexpected error occurred.');
+      }
+    });
+  });
+</script>
+
 <script>
   const socket = io();
   <% if (currentUser) { %>
@@ -121,13 +179,12 @@
     new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['إعجابات', 'تعليقات'],
+        labels: ['Likes', 'Comments'],
         datasets: [{ data: [<%= post.likes.length %>, <%= post.comments.length %>], backgroundColor: ['#dc3545', '#0d6efd'] }]
       },
       options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
   <% } %>
-
 </script>
 </body>
 </html>
