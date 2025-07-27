@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 // عرض الإعدادات
 router.get('/',  async (req, res) => {
@@ -50,25 +50,35 @@ router.post('/privacy', async (req, res) => {
   }
 });
 
-
-// تغيير كلمة المرور
-router.post('/password',  async (req, res) => {
+// تغيير كلمة المرور (بدون تشفير)
+router.post('/password', async (req, res) => {
   const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
   if (newPassword !== confirmNewPassword) {
     return res.status(400).send('Passwords do not match');
   }
+
   try {
     const user = await User.findById(req.session.userId);
-    const match = await bcrypt.compare(currentPassword, user.password);
-    if (!match) return res.status(400).send('Current passwords are incorrect.');
-    user.password = await bcrypt.hash(newPassword, 10);
+
+    if (!user) return res.status(404).send('User not found');
+
+    // مقارنة مباشرة بدون تشفير
+    if (user.password !== currentPassword) {
+      return res.status(400).send('Current password is incorrect.');
+    }
+
+    // حفظ كلمة المرور الجديدة كما هي
+    user.password = newPassword;
     await user.save();
+
     res.redirect('/settings');
   } catch (err) {
     console.error(err);
     res.status(500).send('Password change failed');
   }
 });
+
 router.get('/notifications', async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -140,6 +150,28 @@ router.get('/profile/:userId', async (req, res) => {
     console.error(err);
     res.status(500).send('An error occurred while loading the page.');
   }
+});
+
+router.post('/toggle-dark-mode', async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const user = await User.findById(req.user._id);
+    user.isDarkMode = !user.isDarkMode;
+    await user.save();
+
+    res.json({ success: true, isDarkMode: user.isDarkMode });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+// routes/settings.js
+router.post('/update-theme', async (req, res) => {
+  if (!req.user) return res.status(401).json({ success: false });
+  const { postBgColor, postTextColor, chatBgColor, chatTextColor, notificationColor, savedPostsBgColor ,     backgroundAnimation  } = req.body;
+  Object.assign(req.user.themeSettings, { postBgColor, postTextColor, chatBgColor, chatTextColor, notificationColor, savedPostsBgColor ,     backgroundAnimation });
+  await req.user.save();
+  res.json({ success: true, themeSettings: req.user.themeSettings });
 });
 
 module.exports = router;
