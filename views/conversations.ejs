@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Conversations</title>
   
+<style>
+  .post-card {
+  background-color: var(--post-bg-color);
+  color: var(--post-text-color);
+}
+
+.chat-box {
+  background-color: var(--chat-bg-color);
+  color: var(--chat-text-color);
+}
+
+.notification {
+  background-color: var(--notification-color);
+}
+
+.saved-post {
+  background-color: var(--saved-posts-bg-color);
+}
+
+</style>
 </head>
 <body>
   <div class="chat-container">
@@ -13,7 +33,7 @@
       
       <% conversations.forEach(conv => { %>
         <% let other = conv.participants.find(p => p._id.toString() !== user._id.toString()); %>
-        <div class="chat-item" data-id="<%= other._id %>">
+        <div class="chat-item" data-id="<%= other._id %>"  class="chat-box p-3 rounded mb-2">
           <a href="/chat/<%= other._id %>" class="chat-link">
             <div class="avatar">
               <img src="<%= other.avatar %>" alt="<%= other.username %>" class="avatar-img">
@@ -139,6 +159,12 @@ header, .hidden-navbar {
 }
 
   </style>
-  
+<script>
+  const theme = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+
+  for (const [key, val] of Object.entries(theme)) {
+    document.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, "-$1").toLowerCase(), val);
+  }
+</script>  
 </body>
 </html>
