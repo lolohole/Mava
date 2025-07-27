@@ -114,16 +114,17 @@
     <hr />
 
     <!-- Privacy Settings -->
-    <form action="/privacy" method="POST">
-  <label for="privacy">إعدادات الخصوصية:</label>
+     <form action="/settings/privacy" method="POST">
+  <label for="privacy"> Privacy settings:</label>
  <select name="privacy" id="privacy" required>
-  <option value="public" <%= user.privacy === 'public' ? 'selected' : '' %>>عام</option>
-  <option value="private" <%= user.privacy === 'private' ? 'selected' : '' %>>خاص</option>
+  <option value="public" <%= user.privacy === 'public' ? 'selected' : '' %>>Public </option>
+  <option value="private" <%= user.privacy === 'private' ? 'selected' : '' %>>private</option>
 </select>
 
 
-  <button type="submit">تحديث</button>
+  <button type="submit">update</button>
 </form>
+
 
 
 
