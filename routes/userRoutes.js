@@ -13,9 +13,9 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // إعداد Cloudinary
 cloudinary.config({
-  cloud_name: 'YOUR_CLOUD_NAME',
-  api_key: 'YOUR_API_KEY',
-  api_secret: 'YOUR_API_SECRET'
+  cloud_name: 'djsi7vcsl',  // استبدلها بـ cloud_name الخاص بك من Cloudinary
+  api_key: '616254387969826',        // استبدلها بـ api_key الخاص بك من Cloudinary
+  api_secret: 'F1uc2OzqIRqOWNKAzzkfBNV1ERM'  
 });
 
 // إعداد multer لاستخدام Cloudinary storage
@@ -163,8 +163,16 @@ router.post('/editProfile', auth, upload.single('avatar'), async (req, res) => {
       links: {
         tiktok: req.body['links[tiktok]'] || req.body.tiktok || '',
         instagram: req.body['links[instagram]'] || req.body.instagram || '',
-        github: req.body['links[github]'] || req.body.github || ''
+        github: req.body['links[github]'] || req.body.github || '' ,
+         linkedin: req.body['links[linkedin]'] || req.body.linkedin || '', linkedin: req.body.linkedin || '',
+         facebook: req.body['links[facebook]'] || req.body.facebook || '', facebook: req.body.facebook || '',
+        x: req.body['links[x]'] || req.body.x || '',
       },
+      
+  
+
+showEmail: req.body.showEmail === 'on' ,
+
       services: services || []
     };
 
@@ -261,6 +269,9 @@ router.post('/unfollow/:id', auth, async (req, res) => {
 });
 
 
+
+
+
 // ✅ 6. حذف الحساب
 router.post('/profile/delete', auth, async (req, res) => {
   try {
@@ -280,6 +291,7 @@ router.post('/profile/delete', auth, async (req, res) => {
     res.status(500).json({ error: 'Error deleting account' });
   }
 });
+
 
 
 module.exports = router;
