@@ -6,8 +6,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <style>
-    body {
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const t = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+      if (Object.keys(t).length) {
+        for (const k in t) {
+          document.documentElement.style.setProperty(
+            '--' + k.replace(/([A-Z])/g, '-$1').toLowerCase(),
+            t[k]
+          );
+        }
+      }
+    });
+  </script>
+<style>
+  :root {
+  --post-bg-color: #ffffff;
+  --post-text-color: #ffffff;
+  --chat-bg-color: #ffffff;
+  --chat-text-color: #000000;
+  --notification-color: #ffeb3b;
+  --saved-posts-bg-color: #e0e0e0;
+}
+
+/* تطبيق الألوان */
+.post-card {
+  background-color: var(--post-bg-color);
+  color: var(--post-text-color);
+}
+
+.chat-box {
+  background-color: var(--chat-bg-color);
+  color: var(--chat-text-color);
+}
+
+.notification {
+  background-color: var(--notification-color);
+}
+
+.saved-post {
+  background-color: var(--saved-posts-bg-color);
+}
+
+
+
+  
+  body {
       background-color: #fafafa;
       font-family: 'Arial', sans-serif;
       padding-bottom: 70px;
@@ -136,16 +181,88 @@
     width: 80%;
     margin-bottom: 15px;
   }
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+  .status-badge {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+  }
+
+  .online-badge {
+    background-color: #28a745;
+  }
+
+  .offline-badge {
+    background-color: #6c757d;
+  }
+
+  .profile-header {
+    padding-top: 20px;
+    position: relative;
+  }
+
+
 }
 
   </style>
-</head>
-<body >
+<style>
     
 
-<div class="container">
+    
+  </style>
+</head>
+<body >
+
+<canvas id="canvas0"></canvas>
+  <canvas id="canvas1"></canvas>
+  <canvas id="canvas2"></canvas>
+  <canvas id="canvas3"></canvas>
+  <canvas id="canvas4"></canvas>
+  <canvas id="canvas5"></canvas>
+  <canvas id="canvas6"></canvas>
+  <canvas id="canvas7"></canvas>
+  <canvas id="canvas8"></canvas>
+
+
+
+  
+   <div class="profile-header position-relative mb-4">
+
+  <% if (profileUser.isOnline) { %>
+    <span class="status-badge online-badge position-absolute top-0 end-0 me-2 mt-2">🟢 Online</span>
+  <% } else { %>
+    <span class="status-badge offline-badge position-absolute top-0 end-0 me-2 mt-2">
+      🔘 Last seen: <%= new Date(profileUser.lastSeen).toLocaleString() %>
+    </span>
+  <% } %>
+</div>
+   
+
+
+
+
+<div class="container" >
   <div class="profile-header text-center">
     <img src="<%= profileUser.avatar || '/default-avatar.png' %>" alt="Avatar" class="rounded-circle mb-2" style="width: 120px; height: 120px; object-fit: cover;">
+  <% if (profileUser.isVerified) { %>
+    <span class="verified">✔️</span>
+  <% } %>
+</h1>
+   
 
     <h2><%= profileUser.username %></h2>
 
@@ -153,7 +270,7 @@
       <span class="badge bg-primary">✔️  Verified account</span>
     <% } %>
 
-    <div class="mt-2">
+    <div class="mt-2" >
       <span><%= posts.length %> Post  </span><br> 
       <span> Followers <span id="followersCount"><%= profileUser.followers.length %></span></span> 
       <span>Following<%= profileUser.following.length %> </span>
@@ -167,7 +284,7 @@
             <%= currentUser.following.includes(profileUser._id) ? ' Unfollow' : 'Follow ' %>
           </button>
         </form>
-
+       
         <!-- أزرار التفاعل -->
         <a href="/chat/<%= profileUser._id %>" class="btn btn-sm btn-secondary">💬 Chat</a>
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#requestModal">📥  Order now</button>
@@ -181,7 +298,11 @@
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#requestModal">📥  Order now</button>
         <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#personalModal">📄  Personal information</button>
         <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#socialModal">🔗  Social media links</button>
-      <% } %>
+  <a href="/admin/dashboard" class="btn btn-warning mt-2">
+      Admin control panel 🛠
+  </a>
+
+        <% } %>
     </div>
   </div>
 
@@ -191,7 +312,49 @@
   
 
 <!-- سكربت المتابعة -->
-<script>
+
+
+
+
+  <!-- View All Services Button -->
+  <div class="text-center mb-4">
+    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#servicesModal">💼 View All Services</button>
+  </div>
+  <div class="profile-links">
+  <!-- السطر داخل الـ if في profile-links -->
+<% if (currentUser && currentUser._id.toString() === profileUser._id.toString()) { %>
+  <a href="/profile-campaigns/profile/<%= profileUser._id %>" class="btn btn-info">View My Campaigns</a>
+<% } else { %>
+  <a href="/profile-campaigns/profile/<%= profileUser._id %>" class="btn btn-info">View Campaigns</a>
+<% } %>
+
+<!-- عرض الرسم البياني فقط لصاحب البروفايل -->
+<% if (currentUser && profileUser && currentUser._id.toString() === profileUser._id.toString()) { %>
+  <!-- الرسم البياني هنا -->
+<% } %>
+
+<!-- تعديل عرض الصورة الكبيرة -->
+
+
+
+  <!-- رابط المؤثرين، هذا الرابط يمكن أن يظهر للجميع -->
+  <a href="/campaigns/influencers" class="btn btn-info">View Influencers</a>
+</div>
+
+
+
+<br>
+<% if (currentUser && profileUser && currentUser._id.toString() === profileUser._id.toString()) { %>
+  <!-- عرض المخطط فقط لصاحب الحساب-->
+  <div class="card mb-4">
+    <div class="card-body">
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  
+  <script>
   document.addEventListener('DOMContentLoaded', function () {
     const followForm = document.getElementById('followForm');
     const followButton = document.getElementById('followButton');
@@ -234,46 +397,6 @@
     }
   });
 </script>
-
-
-
-  <!-- View All Services Button -->
-  <div class="text-center mb-4">
-    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#servicesModal">💼 View All Services</button>
-  </div>
-  <div class="profile-links">
-  <!-- السطر داخل الـ if في profile-links -->
-<% if (currentUser && currentUser._id.toString() === profileUser._id.toString()) { %>
-  <a href="/profile-campaigns/profile/<%= profileUser._id %>" class="btn btn-info">View My Campaigns</a>
-<% } else { %>
-  <a href="/profile-campaigns/profile/<%= profileUser._id %>" class="btn btn-info">View Campaigns</a>
-<% } %>
-
-<!-- عرض الرسم البياني فقط لصاحب البروفايل -->
-<% if (currentUser && profileUser && currentUser._id.toString() === profileUser._id.toString()) { %>
-  <!-- الرسم البياني هنا -->
-<% } %>
-
-<!-- تعديل عرض الصورة الكبيرة -->
-
-
-
-  <!-- رابط المؤثرين، هذا الرابط يمكن أن يظهر للجميع -->
-  <a href="/campaigns/influencers" class="btn btn-info">View Influencers</a>
-</div>
-
-
-
-<br>
-<% if (currentUser && profileUser && currentUser._id.toString() === profileUser._id.toString()) { %>
-  <!-- عرض المخطط فقط لصاحب الحساب -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <canvas id="statsChart"></canvas>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const ctx = document.getElementById('statsChart').getContext('2d');
     const statsChart = new Chart(ctx, {
@@ -303,7 +426,7 @@
     <% } else { %>
       <% posts.forEach(post => { %>
         <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card post-card">
+          <div class="card post-card" class="card post-card">
             <% if (post.image) { %>
               <img src="<%= post.image %>" class="card-img-top post-image" alt="Post Image" />
             <% } %>
@@ -311,6 +434,7 @@
               <p><strong><%= profileUser.username %>:</strong> <%= post.caption %></p>
               <p class="text-muted"><%= post.likes.length %> Likes | <%= post.comments.length %> Comments</p>
               <a href="/posts/<%= post._id %>" class="btn btn-sm btn-outline-primary">View Post</a>
+              
             </div>
           </div>
         </div>
@@ -349,6 +473,7 @@
   <label for="buyerEmail" class="form-label">Your Email</label>
   <input type="email" class="form-control" id="buyerEmail" value="<%= currentUser.email %>" readonly />
 </div>
+
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">Submit Request</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -391,7 +516,9 @@
       </div>
       <div class="modal-body text-start">
         <p><strong>Name:</strong> <%= profileUser.fullName || 'Not specified' %></p>
+        <% if (profileUser.showEmail) { %>
         <p><strong>Email:</strong> <%= profileUser.email || 'Not specified' %></p>
+        <% } %>
         <p><strong>Phone:</strong> <%= profileUser.phone || 'Not specified' %></p>
         <p><strong>Location:</strong> <%= profileUser.location || 'Not specified' %></p>
         <p><strong>Date of Birth:</strong> <%= profileUser.dob ? profileUser.dob.toDateString() : 'Not specified' %></p>
@@ -412,27 +539,48 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body text-start">
+
         <% if (profileUser.links?.tiktok) { %>
           <p><i class="bi bi-tiktok"></i> <a href="<%= profileUser.links.tiktok %>" target="_blank">TikTok</a></p>
         <% } %>
+
         <% if (profileUser.links?.instagram) { %>
           <p><i class="bi bi-instagram"></i> <a href="<%= profileUser.links.instagram %>" target="_blank">Instagram</a></p>
         <% } %>
+
         <% if (profileUser.links?.github) { %>
           <p><i class="bi bi-github"></i> <a href="<%= profileUser.links.github %>" target="_blank">GitHub</a></p>
         <% } %>
-        <% if (!profileUser.links || (!profileUser.links.tiktok && !profileUser.links.instagram && !profileUser.links.github)) { %>
+
+        <% if (profileUser.links?.linkedin) { %>
+          <p><i class="bi bi-linkedin"></i> <a href="<%= profileUser.links.linkedin %>" target="_blank">LinkedIn</a></p>
+        <% } %>
+
+        <% if (profileUser.links?.facebook) { %>
+          <p><i class="bi bi-facebook"></i> <a href="<%= profileUser.links.facebook %>" target="_blank">Facebook</a></p>
+        <% } %>
+
+        <% if (profileUser.links?.x) { %>
+          <p><i class="bi bi-twitter-x"></i> <a href="<%= profileUser.links.x %>" target="_blank">X</a></p>
+        <% } %>
+
+        <% 
+          const links = profileUser.links;
+          const hasLinks = links?.tiktok || links?.instagram || links?.github || links?.linkedin || links?.facebook || links?.x;
+        %>
+        <% if (!hasLinks) { %>
           <p>No links available.</p>
         <% } %>
+
       </div>
     </div>
   </div>
 </div>
 
 
+
 <script src="/socket.io/socket.io.js"></script>
 
-<script src="/js/main.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -495,6 +643,225 @@
   });
 </script>
 
+<script>
+  const theme = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+
+  for (const [key, val] of Object.entries(theme)) {
+    document.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, "-$1").toLowerCase(), val);
+  }
+</script>
+
+
+<script>
+    const canvasCount = 8;
+    const canvases = [];
+    const animations = [];
+    let activeIndex = -1;
+    let animationFrameId;
+
+    for (let i = 0; i < canvasCount; i++) {
+      const canvas = document.getElementById(`canvas${i}`);
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      canvases.push(canvas);
+      animations.push(getAnimation(i, canvas));
+    }
+
+    function clearAll() {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    }
+
+    function getAnimation(index, canvas) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      switch(index) {
+        case 0: // فقاعات
+          const bubbles = Array.from({length: 50}, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 10 + 5,
+            speed: Math.random() * 1 + 0.5
+          }));
+          return function animateBubbles() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = "rgba(255,255,255,0.1)";
+            bubbles.forEach(b => {
+              b.y -= b.speed;
+              if (b.y < -b.r) b.y = h + b.r;
+              ctx.beginPath();
+              ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+              ctx.fill();
+            });
+            animationFrameId = requestAnimationFrame(animateBubbles);
+          };
+
+        case 1: // خطوط تتحرك
+          let t1 = 0;
+          return function animateLines() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = 'cyan';
+            for (let i = 0; i < 20; i++) {
+              ctx.beginPath();
+              for (let x = 0; x < w; x++) {
+                const y = h / 2 + Math.sin((x + t1 + i * 50) * 0.01) * 30;
+                ctx.lineTo(x, y);
+              }
+              ctx.stroke();
+            }
+            t1 += 2;
+            animationFrameId = requestAnimationFrame(animateLines);
+          };
+
+        case 2: // نجوم تلمع
+          const stars = Array.from({length: 100}, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 2,
+            opacity: Math.random()
+          }));
+          return function animateStars() {
+            ctx.clearRect(0, 0, w, h);
+            stars.forEach(s => {
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255,255,255,${s.opacity})`;
+              ctx.fill();
+              s.opacity += (Math.random() - 0.5) * 0.05;
+              if (s.opacity > 1) s.opacity = 1;
+              if (s.opacity < 0) s.opacity = 0;
+            });
+            animationFrameId = requestAnimationFrame(animateStars);
+          };
+
+        case 3: // موجات
+          let t2 = 0;
+          return function animateWaves() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = 'rgba(0,150,255,0.5)';
+            ctx.lineWidth = 2;
+            for (let y = 0; y < h; y += 20) {
+              ctx.beginPath();
+              for (let x = 0; x < w; x++) {
+                const offset = Math.sin((x + t2) * 0.01) * 10;
+                ctx.lineTo(x, y + offset);
+              }
+              ctx.stroke();
+            }
+            t2 += 1;
+            animationFrameId = requestAnimationFrame(animateWaves);
+          };
+
+        case 4: // مربعات نطاطة
+          const squares = Array.from({length: 30}, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            size: Math.random() * 30 + 10,
+            dx: (Math.random() - 0.5) * 2,
+            dy: (Math.random() - 0.5) * 2
+          }));
+          return function animateSquares() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = 'rgba(0,255,0,0.4)';
+            squares.forEach(s => {
+              ctx.fillRect(s.x, s.y, s.size, s.size);
+              s.x += s.dx;
+              s.y += s.dy;
+              if (s.x < 0 || s.x + s.size > w) s.dx *= -1;
+              if (s.y < 0 || s.y + s.size > h) s.dy *= -1;
+            });
+            animationFrameId = requestAnimationFrame(animateSquares);
+          };
+
+        case 5: // دوائر دوّارة
+          let angle = 0;
+          return function animateRotating() {
+            ctx.clearRect(0, 0, w, h);
+            for (let i = 0; i < 10; i++) {
+              const radius = 100 + i * 20;
+              const x = w / 2 + Math.cos(angle + i) * radius;
+              const y = h / 2 + Math.sin(angle + i) * radius;
+              ctx.beginPath();
+              ctx.arc(x, y, 10, 0, Math.PI * 2);
+              ctx.fillStyle = `hsl(${i * 36}, 100%, 50%)`;
+              ctx.fill();
+            }
+            angle += 0.05;
+            animationFrameId = requestAnimationFrame(animateRotating);
+          };
+
+        case 6: // دخان وهمي
+          let smokeParticles = Array.from({length: 60}, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            r: Math.random() * 50,
+            opacity: Math.random() * 0.1
+          }));
+          return function animateSmoke() {
+            ctx.clearRect(0, 0, w, h);
+            smokeParticles.forEach(p => {
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(200, 200, 200, ${p.opacity})`;
+              ctx.fill();
+              p.y -= 0.3;
+              if (p.y < -p.r) {
+                p.y = h + p.r;
+                p.x = Math.random() * w;
+              }
+            });
+            animationFrameId = requestAnimationFrame(animateSmoke);
+          };
+
+        case 7: // مطر أو شهب
+          const drops = Array.from({length: 80}, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            length: Math.random() * 20 + 10,
+            speed: Math.random() * 4 + 2
+          }));
+          return function animateRain() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = "rgba(173,216,230,0.6)";
+            drops.forEach(d => {
+              ctx.beginPath();
+              ctx.moveTo(d.x, d.y);
+              ctx.lineTo(d.x, d.y + d.length);
+              ctx.stroke();
+              d.y += d.speed;
+              if (d.y > h) d.y = -d.length;
+            });
+            animationFrameId = requestAnimationFrame(animateRain);
+          };
+
+        default:
+          return () => {};
+      }
+    }
+
+    function showRandomCanvas() {
+      if (activeIndex >= 0) {
+        canvases[activeIndex].style.display = 'none';
+      }
+
+      clearAll();
+
+      let newIndex;
+      do {
+        newIndex = Math.floor(Math.random() * canvasCount);
+      } while (newIndex === activeIndex);
+
+      activeIndex = newIndex;
+      const canvas = canvases[activeIndex];
+      canvas.style.display = 'block';
+      animations[activeIndex](); // Start animation
+    }
+
+    // أول مرة
+    showRandomCanvas();
+    setInterval(showRandomCanvas, 10000); // كل 10 ثواني
+  </script>
 
 </body>
 </html>
