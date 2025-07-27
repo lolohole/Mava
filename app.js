@@ -27,37 +27,6 @@ const io = new Server(server);
 const Sentiment = require('sentiment');
 const sentiment = new Sentiment();
 
-// لإدارة sockets المستخدمين
-const userSockets = new Map();
-const redis = require('redis');
-const redisClient = redis.createClient();
-
-// إنشاء اتصال بـ Redis Cloud باستخدام الرابط الذي زودتني به
-const client = redis.createClient({
-  url: 'redis://default:yzFXpSqJ2dNRrZqXmOzPzxor3Z9d8QuY@redis-13978.c92.us-east-1-3.ec2.redns.redis-cloud.com:13978'
-});
-
-// بدء الاتصال
-client.connect();
-
-// رسائل الأحداث
-client.on('connect', () => {
-  console.log('✅ Connected to Redis Cloud!');
-});
-
-client.on('error', (err) => {
-  console.error('❌ Redis connection error:', err);
-});
-
-// تصدير العميل لاستخدامه في ملفات أخرى
-module.exports = client;
-
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-
-redisClient.connect();
-
-app.set('redisClient', redisClient);
-
 // إعداد EJS
 app.set('view engine', 'ejs');
 app.use(expressLayouts);
@@ -128,10 +97,9 @@ const notificationRoutes = require('./routes/notifications');
 const campaignsRouter = require('./routes/campaigns');
 const contactRouter = require('./routes/contact');
 const profileCampaignsRouter = require('./routes/profile-campaigns');
-// Use the contact routes
 const adminRoutes = require('./routes/admin');
 const adminUsersRoutes = require('./routes/adminUsers');
-const devRoutes = require('./routes/dev'); // أو اسم الملف
+const devRoutes = require('./routes/dev');
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
@@ -148,8 +116,6 @@ app.use('/profile-campaigns', profileCampaignsRouter);
 app.use('/admin', adminRoutes);
 app.use('/admin', adminUsersRoutes);
 app.use('/dev', devRoutes);
-
-
 
 // صفحة البروفايل
 app.get('/profile/:id', async (req, res) => {
@@ -175,18 +141,14 @@ app.get('/profile/:id', async (req, res) => {
 app.get('/posts/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
 
-  // ✅ تحقق أن الـ ID صالح قبل البحث
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).send('رابط المنشور غير صالح');
   }
 
   try {
-    const post = await Post.findById(id)
-      .populate('user comments.user');
-
+    const post = await Post.findById(id).populate('user comments.user');
     if (!post) return res.status(404).send('هذا المنشور غير موجود');
 
-    // تأكد من تحويل ObjectId إلى String للمقارنة في EJS
     const savedPosts = req.user?.savedPosts?.map(id => id.toString()) || [];
 
     res.render('post', {
@@ -201,7 +163,6 @@ app.get('/posts/:id', authMiddleware, async (req, res) => {
     res.status(500).send('حدث خطأ في عرض المنشور');
   }
 });
-
 
 // لايك مع إشعار
 app.post('/like/:postId', authMiddleware, async (req, res) => {
@@ -259,8 +220,9 @@ app.post('/comment/:postId', authMiddleware, async (req, res) => {
   }
 });
 
-
 // ✅✅ Socket.IO Logic
+const userSockets = new Map();
+
 io.on('connection', (socket) => {
   console.log('🟢 مستخدم متصل عبر Socket.IO');
 
@@ -319,11 +281,11 @@ io.on('connection', (socket) => {
     console.log('🔴 مستخدم فصل الاتصال');
   });
 });
+
 app.use(helmet());
 
 // تشغيل السيرفر
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🌐 Server running on port ${PORT}`);
 });
-
