@@ -179,10 +179,18 @@
     <label>Bio:</label>
     <textarea name="bio" rows="4"><%= user.bio || '' %></textarea>
 
-    <label>Social Links:</label>
-    <input type="url" name="tiktok" placeholder="TikTok" value="<%= user.links?.tiktok || '' %>">
+   <h3>Social Links</h3>
+<input type="url" name="linkedin" placeholder="LinkedIn URL" value="<%= user.links?.linkedin || '' %>">
+<input type="url" name="facebook" placeholder="Facebook URL" value="<%= user.links?.facebook || '' %>">
+<input type="url" name="x" placeholder="X (Twitter) URL" value="<%= user.links?.x || '' %>">
+ <input type="url" name="tiktok" placeholder="TikTok" value="<%= user.links?.tiktok || '' %>">
     <input type="url" name="instagram" placeholder="Instagram" value="<%= user.links?.instagram || '' %>">
     <input type="url" name="github" placeholder="GitHub" value="<%= user.links?.github || '' %>">
+    
+<label>
+  <input type="checkbox" name="showEmail" <%= user.showEmail ? 'checked' : '' %> >
+  Show my email on my profile
+</label>
 
     <label>Services Offered:</label>
     <div id="servicesContainer">
@@ -206,13 +214,13 @@
 
     <div class="buttons">
       <button type="submit" class="save-btn">Save Changes</button>
-<a href="/profile" class="cancel-btn styled-link">Cancel</a>
+<a href="/users/profile" class="cancel-btn styled-link">Cancel</a>
     </div>
   </form>
 
-  <form id="deleteForm" action="/users/delete" method="POST" onsubmit="return confirmDelete(event)">
-    <button type="submit" class="delete-btn">Delete Account Permanently</button>
-  </form>
+  <form action="/settings/delete" method="POST" onsubmit="return confirmDelete(event)">
+      <button type="submit" class="btn btn-danger w-100">🗑️ Permanently Delete Account</button>
+    </form>
 </div>
 
 <script>
