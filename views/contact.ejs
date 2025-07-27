@@ -117,8 +117,18 @@
       <textarea id="message" name="message" placeholder="Write your message here..." required></textarea>
 
       <button type="submit">Send Message</button>
+       <% if (currentUser) { %>
+          
+        <% } else { %>
+          <div>
+            <h1>Not logged in</h1>
+            
+          <a href="/auth/login" class="btn btn-outline-success btn-sm">Login</a>
+          <br>
+          </div>
+           <% } %>
     </form>
   </div>
-
+ 
 </body>
 </html>
