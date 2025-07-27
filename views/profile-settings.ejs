@@ -60,11 +60,61 @@
       margin: 30px 0;
       border-top: 2px solid #e9ecef;
     }
-  </style>
+  
+
+    .dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.dark-mode .card,
+.dark-mode .post-card,
+.dark-mode .chat-box,
+.dark-mode .notification,
+.dark-mode .saved-post {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+}
+
+
+</style>
+
+<!-- Toastify CSS & JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 </head>
 <body>
   
 <% layout = false %>
+   <button id="toggleDarkMode" class="btn btn-dark">🌙 Toggle Dark Mode</button>
+
+<script>
+  document.getElementById('toggleDarkMode').addEventListener('click', async () => {
+    try {
+      const res = await fetch('/settings/toggle-dark-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        document.body.classList.toggle('dark-mode', data.isDarkMode);
+        // احفظ الوضع في localStorage (اختياري)
+        localStorage.setItem('darkMode', data.isDarkMode ? '1' : '0');
+      } else {
+        alert('Failed to toggle dark mode');
+      }
+    } catch (error) {
+      console.error('Dark mode toggle error:', error);
+    }
+  });
+
+  // استعادة الوضع من localStorage (اختياري)
+  if (localStorage.getItem('darkMode') === '1') {
+    document.body.classList.add('dark-mode');
+  }
+</script>
 
   <div class="settings-container">
 
@@ -112,9 +162,10 @@
     
 
     <hr />
+    <h2>Update Account Privacy</h2>
 
     <!-- Privacy Settings -->
-     <form action="/settings/privacy" method="POST">
+    <form action="/settings/privacy" method="POST">
   <label for="privacy"> Privacy settings:</label>
  <select name="privacy" id="privacy" required>
   <option value="public" <%= user.privacy === 'public' ? 'selected' : '' %>>Public </option>
@@ -124,7 +175,38 @@
 
   <button type="submit">update</button>
 </form>
+  <br>
+    <h2>Change the colors of posts and chats  </h2>
 
+<form id="themeForm">
+  <label>Post Background Color: <input type="color" name="postBgColor"></label>
+  <br>
+    <br>
+
+  <label>Post Text Color: <input type="color" name="postTextColor"></label>
+    <br>
+
+  <br>
+  <label>Chat Background Color: <input type="color" name="chatBgColor"></label>
+    <br>
+
+  <br>
+  <label>Chat Text Color: <input type="color" name="chatTextColor"></label>
+     <br>
+
+  <br>
+  <label>Notification Color: <input type="color" name="notificationColor"></label>
+    <br>
+
+  <br>
+  <label>Saved Posts BG Color: <input type="color" name="savedPostsBgColor"></label><br>
+   <br>
+   
+   
+  <button type="submit" class="btn btn-success">Save Theme</button>
+</form>
+
+   <br>
 
 
 
@@ -181,6 +263,58 @@
   </div>
 
   
-  
+ <script>
+  document.getElementById('themeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch('/settings/update-theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        Toastify({
+          text: "✅ Theme saved successfully!",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#28a745",
+          stopOnFocus: true,
+          close: true
+        }).showToast();
+
+        setTimeout(() => location.reload(), 3100);
+      } else {
+        Toastify({
+          text: "❌ Failed to save theme.",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: "#dc3545",
+          stopOnFocus: true,
+          close: true
+        }).showToast();
+      }
+    } catch (err) {
+      console.error('Error saving theme:', err);
+      Toastify({
+        text: "⚠️ An error occurred while saving.",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ffc107",
+        stopOnFocus: true,
+        close: true
+      }).showToast();
+    }
+  });
+</script>
+
 </body>
 </html>
