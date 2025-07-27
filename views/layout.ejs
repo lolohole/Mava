@@ -12,6 +12,33 @@
 
   <!-- Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
+    <link rel="manifest" href="/manifest.json">
+
+
+    <link rel="stylesheet" href="/css/theme.css">
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const t = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+    if (Object.keys(t).length) {
+      for (const k in t) {
+        document.documentElement.style.setProperty('--' + k.replace(/([A-Z])/g, '-$1').toLowerCase(), t[k]);
+      }
+    }
+  });
+</script>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const t = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+      if (Object.keys(t).length) {
+        for (const k in t) {
+          document.documentElement.style.setProperty(
+            '--' + k.replace(/([A-Z])/g, '-$1').toLowerCase(),
+            t[k]
+          );
+        }
+      }
+    });
+  </script>
 
   <!-- Custom Styles -->
   <style>
@@ -79,12 +106,84 @@
       pointer-events: none;
     }
 
+
+  .status-badge {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+  }
+
+  .online-badge {
+    background-color: #28a745;
+  }
+
+  .offline-badge {
+    background-color: #6c757d;
+  }
+
+  .profile-header {
+    padding-top: 20px;
+    position: relative;
+  }
+
+  
+
+
+
+
+
+
+    .dark-mode {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+.dark-mode .card {
+  background-color: #1e1e1e;
+  color: #ddd;
+}
+
+.dark-mode .btn {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark-mode a {
+  color: #90caf9;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+canvas#bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      opacity: 0.3;
+      pointer-events: none;
+      display: block;
+    }
+
   </style>
 
   <link rel="stylesheet" href="/css/style.css">
 
 </head>
-<body data-userid="<%= currentUser?._id %>">
+<body data-userid="<%= currentUser?._id %>"   class="<%= currentUser && currentUser.isDarkMode ? 'dark-mode' : '' %>">
+<canvas id="bgCanvas"></canvas>
 
 
   
@@ -118,6 +217,13 @@
               🔔
               <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none">0</span>
             </a>
+            <a href="/posts/saved" class="btn btn-outline-primary btn-sm mt-2">
+  📌 Saved Posts
+</a>
+
+
+           
+
             <li class="nav-item">
               <form action="/auth/logout" method="POST" class="d-inline">
                 <button type="submit" class="btn btn-link nav-link">🚪 Logout</button>
@@ -146,7 +252,7 @@
     <div class="bottom-nav d-lg-none">
       <a href="/"><i class="bi bi-house-door-fill"></i><br>Home</a>
       <a href="/posts/new"><i class="bi bi-plus-square-fill"></i><br>New</a>
-      <a href="/conversations"><i class="bi bi-chat-dots-fill"></i><br>Messages</a>
+      <a href="/inpox"><i class="bi bi-chat-dots-fill"></i><br>Messages</a>
       <a href="/users/<%= currentUser._id %>"><i class="bi bi-person-circle"></i><br>Profile</a>
     </div>
   <% } %>
@@ -169,65 +275,7 @@
   <script src="/js/chat.js"></script>
 
   <!-- Canvas Code -->
-  <script>
-    // Canvas customization
-    const canvas = document.createElement('canvas');
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    // Particle effect or any other animations
-    function drawParticles() {
-      const particles = [];
-      for (let i = 0; i < 200; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 3 + 1,
-          speedX: Math.random() * 2 - 1,
-          speedY: Math.random() * 2 - 1,
-          color: 'rgba(72, 88, 235, 0.5)',
-        });
-      }
-
-      function updateParticles() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach((particle, index) => {
-          particle.x += particle.speedX;
-          particle.y += particle.speedY;
-
-          if (particle.x < 0 || particle.x > canvas.width || particle.y < 0 || particle.y > canvas.height) {
-            particles[index] = {
-              x: Math.random() * canvas.width,
-              y: Math.random() * canvas.height,
-              size: Math.random() * 3 + 1,
-              speedX: Math.random() * 2 - 1,
-              speedY: Math.random() * 2 - 1,
-              color: 'rgba(72, 88, 235, 0.5)',
-            };
-          }
-
-          ctx.beginPath();
-          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          ctx.fillStyle = particle.color;
-          ctx.fill();
-        });
-
-        requestAnimationFrame(updateParticles);
-      }
-
-      updateParticles();
-    }
-
-    drawParticles();
-
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
-  </script>
+  
 
   <!-- Google Translate (optional for translation) -->
   <script type="text/javascript">
@@ -258,6 +306,426 @@
   <!-- Custom JavaScript -->
   <script src="/public/js/main.js"></script>
   
+   <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('✅ Service Worker Registered:', reg.scope))
+      .catch(err => console.error('❌ Service Worker Error:', err));
+  }
+</script>
+<script>
+  // When the services modal is closed, remove the backdrop
+  $('#servicesModal').on('hidden.bs.modal', function () {
+    $('.modal-backdrop').remove(); // This will remove the backdrop from the page
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>//canves</script>
+
+<canvas id="bgCanvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  let animationFrameId;
+
+  // دوال الخلفيات
+  function startParticlesBackground() {
+    const particles = [];
+    for (let i = 0; i < 200; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 3 + 1,
+        speedX: Math.random() * 2 - 1,
+        speedY: Math.random() * 2 - 1,
+        color: 'rgba(72, 88, 235, 0.5)',
+      });
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (
+          p.x < 0 ||
+          p.x > canvas.width ||
+          p.y < 0 ||
+          p.y > canvas.height
+        ) {
+          particles[i] = {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 3 + 1,
+            speedX: Math.random() * 2 - 1,
+            speedY: Math.random() * 2 - 1,
+            color: 'rgba(72, 88, 235, 0.5)',
+          };
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+      animationFrameId = requestAnimationFrame(update);
+    }
+    update();
+  }
+
+  function startStarsBackground() {
+    const stars = Array.from({ length: 150 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 1.5,
+      speed: Math.random() * 0.5 + 0.2,
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      stars.forEach((s) => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+        s.y += s.speed;
+        if (s.y > canvas.height) s.y = 0;
+      });
+      animationFrameId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function startWavesBackground() {
+    let t = 0;
+
+    function draw() {
+      t += 0.02;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#6c63ff';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        for (let x = 0; x < canvas.width; x += 10) {
+          const y =
+            canvas.height / 2 + Math.sin(x * 0.02 + t + i) * 50;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      animationFrameId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function startMatrixBackground() {
+    const cols = 50;
+    const size = canvas.width / cols;
+    const drops = Array(cols).fill(0);
+
+    function draw() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0F0';
+      ctx.font = size + 'px monospace';
+      drops.forEach((y, i) => {
+        const text = String.fromCharCode(
+          0x30a0 + Math.random() * 96
+        );
+        ctx.fillText(text, i * size, y * size);
+        if (y * size > canvas.height && Math.random() > 0.975)
+          drops[i] = 0;
+        drops[i]++;
+      });
+      animationFrameId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function startBubblesBackground() {
+    const bubbles = Array.from({ length: 80 }, () => ({
+      x: Math.random() * canvas.width,
+      y: canvas.height + Math.random() * 100,
+      r: Math.random() * 20 + 10,
+      dy: Math.random() * -1.5 - 0.5,
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      bubbles.forEach((b) => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(173, 216, 230, 0.5)';
+        ctx.fill();
+        b.y += b.dy;
+        if (b.y + b.r < 0) {
+          b.y = canvas.height + b.r;
+          b.x = Math.random() * canvas.width;
+        }
+      });
+      animationFrameId = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function startOrbitingCircles() {
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const circles = Array.from({ length: 8 }, (_, i) => ({
+    angle: (i / 8) * 2 * Math.PI,
+    radius: 100 + Math.random() * 50,
+    size: 8,
+    speed: 0.01 + Math.random() * 0.02,
+    color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    circles.forEach((c) => {
+      c.angle += c.speed;
+      const x = centerX + Math.cos(c.angle) * c.radius;
+      const y = centerY + Math.sin(c.angle) * c.radius;
+
+      ctx.beginPath();
+      ctx.arc(x, y, c.size, 0, 2 * Math.PI);
+      ctx.fillStyle = c.color;
+      ctx.fill();
+    });
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+  function startAnimatedGrid() {
+  const gridSize = 50;
+  let offset = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#4caf50';
+    ctx.lineWidth = 1;
+    offset += 0.5;
+
+    for (let x = 0; x < canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x + offset % gridSize, 0);
+      ctx.lineTo(x + offset % gridSize, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y + offset % gridSize);
+      ctx.lineTo(canvas.width, y + offset % gridSize);
+      ctx.stroke();
+    }
+
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function startPulseWaves() {
+  let t = 0;
+  function draw() {
+    t += 0.05;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#ff4081';
+    ctx.lineWidth = 3;
+
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      for (let x = 0; x < canvas.width; x += 5) {
+        const y =
+          canvas.height / 2 +
+          Math.sin(x * 0.05 + t + i * 1.5) *
+            (30 + 20 * Math.sin(t * 2 + i));
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+function startTwinklingCircles() {
+  const circles = Array.from({ length: 100 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 3 + 1,
+    alpha: Math.random(),
+    delta: Math.random() * 0.02 + 0.01,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    circles.forEach((c) => {
+      c.alpha += c.delta;
+      if (c.alpha >= 1 || c.alpha <= 0) c.delta *= -1;
+
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(255, 255, 255, ${c.alpha})`;
+      ctx.fill();
+    });
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+
+function startMovingLines() {
+  const lines = Array.from({ length: 30 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    length: 50 + Math.random() * 100,
+    speed: 1 + Math.random() * 2,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#00bcd4';
+    ctx.lineWidth = 2;
+
+    lines.forEach((line) => {
+      ctx.beginPath();
+      ctx.moveTo(line.x, line.y);
+      ctx.lineTo(line.x, line.y - line.length);
+      ctx.stroke();
+
+      line.y -= line.speed;
+      if (line.y + line.length < 0) line.y = canvas.height + line.length;
+    });
+
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+
+
+  // إيقاف الأنيميشن السابق
+  function clearAnimation() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+  }
+
+  // تخزين الدالة الحالية للإلغاء بين التبديل
+  let currentAnimationStopper = null;
+
+  // لتشغيل الأنيميشن والاحتفاظ بدالة الإيقاف (لو متوفرة)
+  function runAnimation(type) {
+  clearAnimation();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  switch (type) {
+    case 'particles':
+      startParticlesBackground();
+      break;
+    case 'stars':
+      startStarsBackground();
+      break;
+    case 'waves':
+      startWavesBackground();
+      break;
+    case 'matrix':
+      startMatrixBackground();
+      break;
+    case 'bubbles':
+      startBubblesBackground();
+      break;
+    case 'orbitingCircles':
+      startOrbitingCircles();
+      break;
+    case 'animatedGrid':
+      startAnimatedGrid();
+      break;
+    case 'pulseWaves':
+      startPulseWaves();
+      break;
+    case 'twinklingCircles':
+      startTwinklingCircles();
+      break;
+    case 'movingLines':
+      startMovingLines();
+      break;
+    default:
+      startParticlesBackground();
+  }
+}
+
+
+  // قائمة الأنيميشنات
+  const animations = [
+  'particles',
+  'stars',
+  'waves',
+  'matrix',
+  'bubbles',
+  'orbitingCircles',
+  'animatedGrid',
+  'pulseWaves',
+  'twinklingCircles',
+  'movingLines'
+];
+
+  // اختيار عشوائي
+  function randomAnimation() {
+    const idx = Math.floor(Math.random() * animations.length);
+    return animations[idx];
+  }
+
+  // تبديل الأنيميشن كل فترة (مثلاً 10 ثواني)
+  function cycleAnimations() {
+    const anim = randomAnimation();
+    runAnimation(anim);
+  }
+
+  cycleAnimations(); // بدء فورًا
+  setInterval(cycleAnimations, 10000); // كل 10 ثواني يتغير
+
+</script>
 
 </body>
 </html>
