@@ -257,7 +257,6 @@ io.on('connection', (socket) => {
       }
     }
   });
-});
 
   socket.on('sendMsg', async ({ convId, senderId, receiverId, message }) => {
     try {
