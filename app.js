@@ -99,7 +99,7 @@ const contactRouter = require('./routes/contact');
 const profileCampaignsRouter = require('./routes/profile-campaigns');
 const adminRoutes = require('./routes/admin');
 //const adminUsersRoutes = require('./routes/adminUsers');
-const devRoutes = require('./routes/dev');
+//const devRoutes = require('./routes/dev');
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
@@ -115,7 +115,7 @@ app.use('/contact', contactRouter);
 app.use('/profile-campaigns', profileCampaignsRouter);
 app.use('/admin', adminRoutes);
 //app.use('/admin', adminUsersRoutes);
-app.use('/dev', devRoutes);
+//app.use('/dev', devRoutes);
 
 // صفحة البروفايل
 app.get('/profile/:id', async (req, res) => {
