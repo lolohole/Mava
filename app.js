@@ -11,6 +11,10 @@ const Message = require('./models/Message');
 const Conversation = require('./models/Conversation');
 const Post = require('./models/Posts');
 const Notification = require('./models/Notification');
+const securityConfig = require('./middlewares/security');
+const xssSanitizer = require('./middlewares/xssSanitizer');
+const csurf = require('csurf');
+const helmet = require('helmet');
 
 dotenv.config();
 
@@ -25,6 +29,34 @@ const sentiment = new Sentiment();
 
 // لإدارة sockets المستخدمين
 const userSockets = new Map();
+const redis = require('redis');
+const redisClient = redis.createClient();
+
+// إنشاء اتصال بـ Redis Cloud باستخدام الرابط الذي زودتني به
+const client = redis.createClient({
+  url: 'redis://default:yzFXpSqJ2dNRrZqXmOzPzxor3Z9d8QuY@redis-13978.c92.us-east-1-3.ec2.redns.redis-cloud.com:13978'
+});
+
+// بدء الاتصال
+client.connect();
+
+// رسائل الأحداث
+client.on('connect', () => {
+  console.log('✅ Connected to Redis Cloud!');
+});
+
+client.on('error', (err) => {
+  console.error('❌ Redis connection error:', err);
+});
+
+// تصدير العميل لاستخدامه في ملفات أخرى
+module.exports = client;
+
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+redisClient.connect();
+
+app.set('redisClient', redisClient);
 
 // إعداد EJS
 app.set('view engine', 'ejs');
@@ -35,6 +67,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+//securityConfig(app);
+//app.use(xssSanitizer);
+//app.use(csurf({ cookie: true }));
 
 // الجلسة
 app.use(session({
@@ -74,6 +109,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user || null;
+  next();
+});
+
 // الراوترات
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/authRoutes');
@@ -88,6 +128,10 @@ const notificationRoutes = require('./routes/notifications');
 const campaignsRouter = require('./routes/campaigns');
 const contactRouter = require('./routes/contact');
 const profileCampaignsRouter = require('./routes/profile-campaigns');
+// Use the contact routes
+const adminRoutes = require('./routes/admin');
+const adminUsersRoutes = require('./routes/adminUsers');
+const devRoutes = require('./routes/dev'); // أو اسم الملف
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
@@ -101,6 +145,11 @@ app.use('/', notificationRoutes);
 app.use('/campaigns', campaignsRouter);
 app.use('/contact', contactRouter);
 app.use('/profile-campaigns', profileCampaignsRouter);
+app.use('/admin', adminRoutes);
+app.use('/admin', adminUsersRoutes);
+app.use('/dev', devRoutes);
+
+
 
 // صفحة البروفايل
 app.get('/profile/:id', async (req, res) => {
@@ -124,10 +173,35 @@ app.get('/profile/:id', async (req, res) => {
 
 // عرض منشور
 app.get('/posts/:id', authMiddleware, async (req, res) => {
-  const post = await Post.findById(req.params.id).populate('user comments.user');
-  if (!post) return res.status(404).send('هذا المنشور غير موجود');
-  res.render('post', { post, currentUser: req.user });
+  const { id } = req.params;
+
+  // ✅ تحقق أن الـ ID صالح قبل البحث
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).send('رابط المنشور غير صالح');
+  }
+
+  try {
+    const post = await Post.findById(id)
+      .populate('user comments.user');
+
+    if (!post) return res.status(404).send('هذا المنشور غير موجود');
+
+    // تأكد من تحويل ObjectId إلى String للمقارنة في EJS
+    const savedPosts = req.user?.savedPosts?.map(id => id.toString()) || [];
+
+    res.render('post', {
+      post,
+      currentUser: {
+        ...req.user.toObject(),
+        savedPosts
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('حدث خطأ في عرض المنشور');
+  }
 });
+
 
 // لايك مع إشعار
 app.post('/like/:postId', authMiddleware, async (req, res) => {
@@ -184,6 +258,7 @@ app.post('/comment/:postId', authMiddleware, async (req, res) => {
     res.status(500).send('Error commenting');
   }
 });
+
 
 // ✅✅ Socket.IO Logic
 io.on('connection', (socket) => {
@@ -244,9 +319,11 @@ io.on('connection', (socket) => {
     console.log('🔴 مستخدم فصل الاتصال');
   });
 });
+app.use(helmet());
 
 // تشغيل السيرفر
-const port = process.env.PORT || 5000;
-server.listen(port, () => {
-  console.log(`✅ Server running on port ${port}`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🌐 Server running on port ${PORT}`);
 });
+
