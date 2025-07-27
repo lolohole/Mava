@@ -42,27 +42,7 @@ router.get('/portfolio', (req, res) => res.render('portfolio', { title: 'portfol
 router.get('/sites', (req, res) => res.render('sites', { title: 'sites' }));
 
 // صفحة البروفايل للمستخدم الحالي
-router.get('/profile', async (req, res) => {
-  try {
-    if (!req.session.userId) return res.redirect('/login');
 
-    const currentUser = await User.findById(req.session.userId);
-    const posts = await Post.find({ user: currentUser._id })
-      .populate('user', 'username avatar')
-      .sort({ createdAt: -1 });
-
-    res.render('profile', {
-      user: currentUser,
-      posts,
-      currentUser,
-      isFollowing: false
-    });
-
-  } catch (err) {
-    console.error('Error loading current user profile:', err);
-    res.status(500).send('An error occurred while loading the profile.');
-  }
-});
 
 // صفحة الإشعارات
 router.get('/notifications', auth, async (req, res) => {
@@ -92,17 +72,32 @@ router.post('/notifications/read/:id', auth, async (req, res) => {
 
 // البحث
 router.get('/search', auth, async (req, res) => {
-  const query = req.query.q?.trim();
-  if (!query) return res.redirect('/');
+  let query = req.query.q;
+  if (!query || typeof query !== 'string') return res.redirect('/');
+
+  query = query.trim();
+  if (query.length === 0) return res.redirect('/');
 
   try {
-    const users = await User.find({
-      username: { $regex: query, $options: 'i' }
-    }).select('username avatar');
+    // الحد الأقصى للنتائج للحد من الحمل على السيرفر
+    const MAX_RESULTS = 20;
 
-    const posts = await Post.find({
-      caption: { $regex: query, $options: 'i' }
-    }).populate('user', 'username avatar');
+    // بحث نصي في الـ Users على الحقل username
+    const users = await User.find(
+      { $text: { $search: query } },
+      { score: { $meta: "textScore" }, username: 1, avatar: 1 }
+    )
+    .sort({ score: { $meta: "textScore" } })
+    .limit(MAX_RESULTS);
+
+    // بحث نصي في الـ Posts على الحقل caption
+    const posts = await Post.find(
+      { $text: { $search: query } },
+      { score: { $meta: "textScore" }, caption: 1, user: 1, createdAt:1 }
+    )
+    .sort({ score: { $meta: "textScore" } })
+    .populate('user', 'username avatar')
+    .limit(MAX_RESULTS);
 
     res.render('searchResults', {
       query,
@@ -110,12 +105,12 @@ router.get('/search', auth, async (req, res) => {
       posts,
       currentUser: req.user
     });
+
   } catch (err) {
     console.error('Search error:', err);
     res.status(500).send('An error occurred while searching.');
   }
 });
-
 // عرض منشور محدد
 router.get('/post/:id', async (req, res) => {
   try {
