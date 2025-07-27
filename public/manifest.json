@@ -1,15 +1,36 @@
 {
-  "name": "تطبيقي بدون إنترنت",
-  "short_name": "تطبيقي",
+  "name": "Mava",
+  "short_name": "Mava",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
-  "theme_color": "#0d6efd",
+  "theme_color": "#317EFB",
   "icons": [
     {
-      "src": "/images/icon-192.png",
+      "src": "/icons/icon.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ]
+  ],
+  "id": "mava",
+  "lang": "en",
+  "orientation": "natural",
+  "display_override": [
+    "browser",
+    "fullscreen",
+    "window-controls-overlay"
+  ],
+  "categories": [
+    "lifestyle",
+    "productivity",
+    "social"
+  ],
+  "share_target": {
+    "method": "GET"
+  }
 }
