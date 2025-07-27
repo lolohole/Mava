@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -166,7 +164,35 @@
     .btn-like:active, .btn-bookmark:active, .reaction-icon:active {
       transform: scale(1.3);
     }
-  </style>
+
+
+
+
+
+
+.status-badge {
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+  }
+
+  .online-badge {
+    background-color: #28a745;
+  }
+
+  .offline-badge {
+    background-color: #6c757d;
+  }
+
+  .profile-header {
+    padding-top: 20px;
+    position: relative;
+  }
+
+
+</style>
 </head>
 <body>
 
@@ -183,6 +209,7 @@
         <% if (currentUser) { %>
           
         <% } else { %>
+          <a href="/login" class="btn btn-outline-success btn-sm">Login</a>
         <% } %>
       </div>
     </div>
@@ -194,10 +221,27 @@
       <% posts.forEach(post => { %>
         <div class="post-card" data-post-id="<%= post._id %>">
           <div class="post-header">
-            <a href="/users/<%= post.user._id %>">
-              <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
-            </a>
-            <strong><%= post.user.username %></strong>
+           <% if (post.user) { %>
+  
+<% } else { %>
+  <a href="#">
+    <img src="/default-avatar.png" />
+  </a>
+  <strong>مستخدم غير معروف</strong>
+<% } %>
+
+         <% if (post.user) { %>
+  <a href="/users/<%= post.user._id %>">
+    <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
+  </a>
+  <strong><%= post.user.username %></strong>
+<% } else { %>
+  <a href="#">
+    <img src="/default-avatar.png" />
+  </a>
+  <strong>مستخدم غير معروف</strong>
+<% } %>
+
           </div>
 
           <img class="post-image" src="<%= post.image %>" alt="Post Image" />
@@ -227,12 +271,47 @@
           </div>
 
           <div class="post-caption">
-            <strong><%= post.user.username %></strong> <%= post.caption %>
+            <% if (post.user) { %>
+  <strong><%= post.user.username %></strong> <%= post.caption %>
+<% } else { %>
+  <strong>مستخدم غير معروف</strong> <%= post.caption %>
+<% } %>
+
           </div>
 
          <div class="comments-section">
   <% post.comments.slice(0, 3).forEach(comment => { %>  <!-- عرض أول 3 تعليقات فقط -->
-    <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
+    <% if (comment.user) { %>
+      <p><strong><%= comment.user.username %>:</strong></p>
+
+      <% if(comment.text && comment.text.trim().length > 0) { %>
+        <p><%= comment.text %></p>
+      <% } %>
+
+      <% if(comment.image) { %>
+        <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;" />
+      <% } %>
+
+      <% if(comment.video) { %>
+        <video controls style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;">
+          <source src="<%= comment.video %>" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      <% } %>
+
+    <% } else { %>
+      <p><strong>مستخدم غير معروف:</strong></p>
+      <p><%= comment.text %></p>
+      <% if(comment.image) { %>
+        <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;" />
+      <% } %>
+      <% if(comment.video) { %>
+        <video controls style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;">
+          <source src="<%= comment.video %>" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      <% } %>
+    <% } %>
   <% }) %>
 
   <% if (post.comments.length > 3) { %>
@@ -240,6 +319,13 @@
   <% } %>
 </div>
 
+<form class="save-post-form" data-post-id="<%= post._id %>">
+  <% if (currentUser && currentUser.savedPosts && currentUser.savedPosts.includes(post._id.toString())) { %>
+    <button type="submit" class="save-btn saved">🗑  Remove save</button>
+  <% } else { %>
+    <button type="submit" class="save-btn">💾 save</button>
+  <% } %>
+</form>
 
 
           <% if (currentUser) { %>
@@ -268,7 +354,48 @@
 
   <!-- Bootstrap Script -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // When the services modal is closed, remove the backdrop
+  $('#servicesModal').on('hidden.bs.modal', function () {
+    $('.modal-backdrop').remove(); // This will remove the backdrop from the page
+  });
+</script>
+  <script>
+  document.querySelectorAll('.save-post-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const postId = form.getAttribute('data-post-id');
+      const button = form.querySelector('button');
+      const isSaved = button.classList.contains('saved');
 
+      try {
+        const response = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (isSaved) {
+            button.classList.remove('saved');
+            button.textContent = '💾 save';
+          } else {
+            button.classList.add('saved');
+            button.textContent = '🗑  Remove save';
+          }
+        } else {
+          alert(result.message || 'An error occurred while saving.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while saving..');
+      }
+    });
+  });
+</script>
   <script>
     // Like button handler
     document.querySelectorAll('.btn-like').forEach(button => {
@@ -291,47 +418,91 @@
           // Update like count
           postCard.querySelector('.likes-count').textContent = data.likesCount + ' Likes';
         } catch (error) {
-          alert('Error while liking the post');
+          alert('Log in to comment');
         }
       });
     });
 
-    // Add comment handler
-    document.querySelectorAll('.add-comment').forEach(form => {
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const postId = form.dataset.postId;
-        const input = form.querySelector('input[name="comment"]');
-        const text = input.value.trim();
+   // Add comment handler
+document.querySelectorAll('.add-comment').forEach(form => {
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const postId = form.dataset.postId;
 
-        if (!text) return;
+    // تعيين القيم من الفورم
+    const textInput = form.querySelector('input[name="text"]') || form.querySelector('textarea[name="text"]');
+    const text = textInput ? textInput.value.trim() : '';
 
-        try {
-          const res = await fetch(`/posts/comment/${postId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
-          });
+    const fileInput = form.querySelector('input[type="file"][name="media"]');
+    const file = fileInput ? fileInput.files[0] : null;
 
-          const comments = await res.json();
+    if (!text && !file) {
+      alert('Please add text or media to comment.');
+      return;
+    }
 
-          // Update comments (display last 3 comments)
-          const commentsSection = form.parentElement.querySelector('.comments-section');
-          commentsSection.innerHTML = '';
+    // بناء جسم الطلب حسب وجود ملف أو لا (multipart/form-data)
+    let formData;
+    let fetchOptions;
 
-          comments.slice(-3).forEach(comment => {
-            commentsSection.innerHTML += `<p><strong>${comment.user.username}:</strong> ${comment.text}</p>`;
-          });
-          if (comments.length > 3) {
-            commentsSection.innerHTML += '<small>Show more comments...</small>';
-          }
+    if (file) {
+      formData = new FormData();
+      if (text) formData.append('text', text);
+      formData.append('media', file);
 
-          input.value = '';
-        } catch (error) {
-          alert('Error while adding comment');
-        }
+      fetchOptions = {
+        method: 'POST',
+        body: formData
+      };
+    } else {
+      fetchOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      };
+    }
+
+    try {
+      const res = await fetch(`/posts/comment/${postId}`, fetchOptions);
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Error while adding comment');
+        return;
+      }
+
+      const comments = await res.json();
+
+      // تحديث قسم التعليقات (عرض آخر 3 فقط)
+      const commentsSection = form.parentElement.querySelector('.comments-section');
+      commentsSection.innerHTML = '';
+
+      comments.slice(-3).forEach(comment => {
+        let commentHTML = `<p><strong>${comment.user ? comment.user.username : 'مستخدم غير معروف'}:</strong></p>`;
+        if (comment.text) commentHTML += `<p>${comment.text}</p>`;
+        if (comment.image) commentHTML += `<img src="${comment.image}" alt="Comment image" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;" />`;
+        if (comment.video) commentHTML += `
+          <video controls style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
+            <source src="${comment.video}" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>`;
+        commentsSection.innerHTML += commentHTML;
       });
-    });
+
+      if (comments.length > 3) {
+        commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
+      }
+
+      // إعادة تعيين الحقول
+      if (textInput) textInput.value = '';
+      if (fileInput) fileInput.value = '';
+    } catch (error) {
+      alert('Log in to comment');
+      console.error(error);
+    }
+  });
+});
+
 
     // Example for saving post (bookmark)
     document.querySelectorAll('.btn-bookmark').forEach(button => {
@@ -355,7 +526,7 @@
           }
         } catch (err) {
           console.error('Bookmark error:', err);
-          alert('Error while saving');
+          alert('Log in to comment');
         }
       });
     });
@@ -468,5 +639,21 @@ footer strong {
   <p>Powered by <strong><a href="/contact">Basem Halaika</a></strong></p>
 </footer>
 
+
+
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
