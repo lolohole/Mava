@@ -226,15 +226,38 @@ const userSockets = new Map();
 io.on('connection', (socket) => {
   console.log('🟢 مستخدم متصل عبر Socket.IO');
 
-  socket.on('register', userId => {
+  socket.on('register', async (userId) => {
     userSockets.set(userId, socket.id);
     console.log(`✅ سجل المستخدم: ${userId}`);
+
+    // تحديث حالة المستخدم لـ online
+    try {
+      await User.findByIdAndUpdate(userId, { isOnline: true });
+      socket.userId = userId;
+    } catch (err) {
+      console.error('❌ خطأ في تحديث isOnline:', err);
+    }
   });
 
   socket.on('joinConv', convId => {
     socket.join(convId);
     console.log(`📥 انضم المستخدم للمحادثة: ${convId}`);
   });
+
+  socket.on('disconnect', async () => {
+    console.log('🔴 مستخدم فصل الاتصال');
+    if (socket.userId) {
+      try {
+        await User.findByIdAndUpdate(socket.userId, {
+          isOnline: false,
+          lastSeen: new Date(),
+        });
+      } catch (err) {
+        console.error('❌ خطأ عند تحديث حالة آخر ظهور:', err);
+      }
+    }
+  });
+});
 
   socket.on('sendMsg', async ({ convId, senderId, receiverId, message }) => {
     try {
