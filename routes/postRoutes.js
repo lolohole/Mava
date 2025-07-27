@@ -222,5 +222,160 @@ router.get('/comments/:postId', async (req, res) => {
   }
 });
 
+router.get('/saved', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('savedPosts');
+    res.render('savedPosts', {
+      currentUser: user,
+      savedPosts: user.savedPosts
+    });
+  } catch (err) {
+    console.error('Saved Posts Error:', err);
+    res.status(500).send('Log in to Save.');
+  }
+});
+
+
+
+router.post('/unsavePost/:postId', auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  user.savedPosts = user.savedPosts.filter(id => id.toString() !== req.params.postId);
+  await user.save();
+  res.json({ success: true });
+});
+router.post('/savePost/:postId', auth, async (req, res) => {
+  const postId = req.params.postId;
+  const user = await User.findById(req.user._id);
+
+  if (!user.savedPosts.includes(postId)) {
+    user.savedPosts.push(postId);
+    await user.save();
+    return res.json({ success: true, message: 'Saved' });
+  } else {
+    return res.status(400).json({ message: 'Already saved' });
+  }
+});
+router.get('/edit/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).send('Post not found');
+
+    // تأكد إن المستخدم هو صاحب المنشور
+    if (post.user.toString() !== req.user._id.toString()) {
+      return res.status(403).send('Unauthorized');
+    }
+
+    res.render('posts/edit', { post, currentUser: req.user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// POST تحديث المنشور
+router.post('/edit/:id', auth, upload.single('image'), async (req, res) => {
+  try {
+    console.log('req.params.id:', req.params.id);
+    console.log('req.body:', req.body);
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+
+    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).send('Unauthorized');
+    }
+
+    post.caption = req.body.caption || post.caption;
+
+    if (req.file) {
+      // لو بتستخدم Cloudinary كما في باقي الراوترات
+      post.image = req.file.path;  // هذا url الصورة من Cloudinary
+    }
+
+    await post.save();
+
+    res.redirect('/posts/' + post._id);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+// DELETE post
+router.post('/delete/:id', auth, async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+
+    // تأكد أن المستخدم هو مالك المنشور أو أدمين قبل الحذف
+    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).send('Unauthorized');
+    }
+
+    await post.deleteOne();  // هنا بدل remove() نستخدم deleteOne()
+
+    res.redirect('/admin/dashboard');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// GET edit page
+router.get('/edit/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+    // تحقق صلاحية المستخدم
+    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).send('Unauthorized');
+    }
+    res.render('posts/edit', { post, currentUser: req.user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// POST edit post
+router.post('/edit/:id', auth, async (req, res) => {
+  try {
+    console.log('req.params.id:', req.params.id);
+    console.log('req.body:', req.body);
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+
+    console.log('Found post:', post);
+
+    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).send('Unauthorized');
+    }
+
+    post.caption = req.body.caption || post.caption;
+
+    if (req.file) {
+      post.image = '/uploads/' + req.file.filename;
+    }
+
+    await post.save();
+
+    res.redirect('/posts/' + post._id);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
 
 module.exports = router;
