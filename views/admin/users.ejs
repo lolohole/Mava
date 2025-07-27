@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة المستخدمين</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+</head>
+<body>
+  <div class="container mt-4">
+    <h2>👥 إدارة المستخدمين</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>الاسم</th>
+          <th>اسم المستخدم</th>
+          <th>البريد</th>
+          <th>الدور</th>
+          <th>تغيير الدور</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.fullName || '—' %></td>
+            <td><%= user.username %></td>
+            <td><%= user.email || '—' %></td>
+            <td><%= user.role %></td>
+            <td>
+              <form method="POST" action="/admin/users/<%= user._id %>/role">
+                <select name="role" onchange="this.form.submit()" class="form-select form-select-sm">
+                  <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
+                  <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                </select>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <a href="/admin/dashboard" class="btn btn-secondary mt-3">🔙 رجوع للوحة التحكم</a>
+  </div>
+</body>
+</html>
