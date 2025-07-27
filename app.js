@@ -98,7 +98,7 @@ const campaignsRouter = require('./routes/campaigns');
 const contactRouter = require('./routes/contact');
 const profileCampaignsRouter = require('./routes/profile-campaigns');
 const adminRoutes = require('./routes/admin');
-const adminUsersRoutes = require('./routes/adminUsers');
+//const adminUsersRoutes = require('./routes/adminUsers');
 const devRoutes = require('./routes/dev');
 
 app.use('/', indexRoutes);
@@ -114,7 +114,7 @@ app.use('/campaigns', campaignsRouter);
 app.use('/contact', contactRouter);
 app.use('/profile-campaigns', profileCampaignsRouter);
 app.use('/admin', adminRoutes);
-app.use('/admin', adminUsersRoutes);
+//app.use('/admin', adminUsersRoutes);
 app.use('/dev', devRoutes);
 
 // صفحة البروفايل
