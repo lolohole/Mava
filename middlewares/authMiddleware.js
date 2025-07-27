@@ -3,36 +3,23 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
+    // التحقق من وجود جلسة مستخدم
     if (!req.session.userId) {
       return res.redirect('/auth/login');
     }
 
-    const user = await User.findById(req.session.userId).select('username avatar bookmarks');
+    // جلب بيانات المستخدم مع حقل role مهم للتحقق من صلاحياته لاحقًا
+    const user = await User.findById(req.session.userId).select('username avatar bookmarks role');
     if (!user) {
       return res.redirect('/auth/login');
     }
 
-    req.user = user; // تخزين المستخدم في req.user مع حقل bookmarks
+    // حفظ بيانات المستخدم في req.user للاستعمال في باقي الطلب
+    req.user = user;
     next();
   } catch (err) {
     console.error('Auth Middleware Error:', err);
     res.redirect('/auth/login');
-  }
-};
-const jwt = require('jsonwebtoken');
-
-module.exports = (req, res, next) => {
-  const token = req.header('Authorization');
-  if (!token) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(400).json({ message: 'Invalid token.' });
   }
 };
 
