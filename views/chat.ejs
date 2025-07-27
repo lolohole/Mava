@@ -5,6 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Conversation</title>
   <style>
+
+    
+
+.post-card {
+  background-color: var(--post-bg-color);
+  color: var(--post-text-color);
+}
+
+.chat-box {
+  background-color: var(--chat-bg-color);
+  color: var(--chat-text-color);
+}
+
+.notification {
+  background-color: var(--notification-color);
+}
+
+.saved-post {
+  background-color: var(--saved-posts-bg-color);
+}
+ 
+
+
+
+
     * {
       margin: 0;
       padding: 0;
@@ -137,14 +162,14 @@
 </head>
 <body>
 
-  <div class="chat-container">
+  <div class="chat-container" class="chat-box">
     <h2>Chat with <%= otherUser.username %></h2>
 
-    <div id="msgs">
+    <div id="msgs" >
       <% messages.forEach(m => { 
         const isSent = String(m.sender) === String(user._id);
       %>
-        <div class="<%= isSent ? 'sent' : 'recv' %>">
+        <div class="<%= isSent ? 'sent' : 'recv' %>" class="chat-box" style="background-color: var(--chat-bg-color); color: var(--chat-text-color);">
           <%= m.message %> <small><%= new Date(m.createdAt).toLocaleTimeString() %></small>
           <div class="sentiment">
             <% if (m.emotion === 'حب') { %>
@@ -158,7 +183,7 @@
             <% } else if (m.emotion === 'سلبي') { %>
               <span style="color:red;">😞 Negative</span>
             <% } else { %>
-              <span style="color:gray;">😐 Neutral</span>
+              <span style="color:gray;">😊 Be happy</span>
             <% } %>
           </div>
         </div>
@@ -166,7 +191,7 @@
     </div>
 
     <form id="frm">
-      <input id="txt" autocomplete="off" placeholder="Type a message..." />
+      <input id="txt" autocomplete="off" placeholder="Type a message..." / class="chat-box">
       <button>Send</button>
     </form>
   </div>
@@ -205,31 +230,37 @@
       };
 
       socket.on('newMsg', m => {
-        const div = document.createElement('div');
-        div.className = String(m.sender) === myId ? 'sent' : 'recv';
-        div.innerHTML = `${m.message} <small>${new Date(m.createdAt).toLocaleTimeString()}</small>`;
+  const div = document.createElement('div');
+  div.className = String(m.sender) === myId ? 'sent' : 'recv';
 
-        const sentimentDiv = document.createElement('div');
-        sentimentDiv.classList.add('sentiment');
+  // ✅ استخدام متغيرات CSS مباشرة
+  div.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--chat-bg-color');
+  div.style.color = getComputedStyle(document.documentElement).getPropertyValue('--chat-text-color');
 
-        if (m.emotion === 'حب') {
-          sentimentDiv.innerHTML = '<span style="color:pink;">💖 Love</span>';
-        } else if (m.emotion === 'إيجابي') {
-          sentimentDiv.innerHTML = '<span style="color:green;">😊 Positive</span>';
-        } else if (m.emotion === 'ممتن') {
-          sentimentDiv.innerHTML = '<span style="color:blue;">🙏 Grateful</span>';
-        } else if (m.emotion === 'غضب') {
-          sentimentDiv.innerHTML = '<span style="color:red;">😡 Angry</span>';
-        } else if (m.emotion === 'سلبي') {
-          sentimentDiv.innerHTML = '<span style="color:red;">😞 Negative</span>';
-        } else {
-          sentimentDiv.innerHTML = '<span style="color:gray;">😐 Neutral</span>';
-        }
+  div.innerHTML = `${m.message} <small>${new Date(m.createdAt).toLocaleTimeString()}</small>`;
 
-        div.appendChild(sentimentDiv);
-        msgsContainer.appendChild(div);
-        msgsContainer.scrollTop = msgsContainer.scrollHeight;
-      });
+  const sentimentDiv = document.createElement('div');
+  sentimentDiv.classList.add('sentiment');
+
+  if (m.emotion === 'حب') {
+    sentimentDiv.innerHTML = '<span style="color:pink;">💖 Love</span>';
+  } else if (m.emotion === 'إيجابي') {
+    sentimentDiv.innerHTML = '<span style="color:green;">😊 Positive</span>';
+  } else if (m.emotion === 'ممتن') {
+    sentimentDiv.innerHTML = '<span style="color:blue;">🙏 Grateful</span>';
+  } else if (m.emotion === 'غضب') {
+    sentimentDiv.innerHTML = '<span style="color:red;">😡 Angry</span>';
+  } else if (m.emotion === 'سلبي') {
+    sentimentDiv.innerHTML = '<span style="color:red;">😞 Negative</span>';
+  } else {
+    sentimentDiv.innerHTML = '<span style="color:gray;">😐 Neutral</span>';
+  }
+
+  div.appendChild(sentimentDiv);
+  msgsContainer.appendChild(div);
+  msgsContainer.scrollTop = msgsContainer.scrollHeight;
+});
+
     })();
 
     // Background Particle Effect
@@ -283,5 +314,26 @@
     drawParticles();
   </script>
    
+
+      <script>
+        const theme = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+
+for (const [key, val] of Object.entries(theme)) {
+  document.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, "-$1").toLowerCase(), val);
+}
+
+      </script>
+      <script>
+  // مثال لو كانت إعدادات المستخدم تحتوي على الألوان
+  const themeSettings = {
+    chatTextColor: "#ff6347", // احصل على اللون من السيرفر
+    chatBgColor: "#f5f5f5"
+  };
+
+  // تطبيق اللون في الصفحة بشكل ديناميكي
+  document.documentElement.style.setProperty('--chat-text-color', themeSettings.chatTextColor);
+  document.documentElement.style.setProperty('--chat-bg-color', themeSettings.chatBgColor);
+</script>
+
 </body>
 </html>
