@@ -32,5 +32,23 @@
   ],
   "share_target": {
     "method": "GET"
-  }
+  },
+  "description": "Mava is a modern social networking platform that helps people connect, share, and engage in a vibrant digital space.",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "screenshots": [
+    {
+      "src": "/screenshots/screen1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Main feed view"
+    },
+    {
+      "src": "/screenshots/screen2.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "User profile page"
+    }
+  ]
 }
