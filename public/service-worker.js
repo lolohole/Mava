@@ -45,3 +45,79 @@ self.addEventListener('fetch', (event) => {
     })());
   }
 });
+
+
+
+
+
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-data') {
+    event.waitUntil(syncDataToServer());
+  }
+});
+
+async function syncDataToServer() {
+  // هنا ترسل بيانات مخزنة مسبقًا إلى الخادم
+  console.log('⏳ Syncing data to server...');
+  // مثال تجريبي فقط:
+  await fetch('/sync-endpoint', {
+    method: 'POST',
+    body: JSON.stringify({ message: 'synced' }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+
+
+
+
+
+
+
+
+
+self.addEventListener('periodicsync', event => {
+  if (event.tag === 'get-latest-content') {
+    event.waitUntil(fetchAndCacheContent());
+  }
+});
+
+async function fetchAndCacheContent() {
+  console.log('🔁 Periodic Sync fetching new content...');
+  const response = await fetch('/');
+  const data = await response.text();
+  const cache = await caches.open('pwabuilder-page');
+  await cache.put('/', new Response(data));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.text() : 'No payload';
+  const options = {
+    body: data,
+    icon: '/icons/icon.png',
+    badge: '/icons/icon.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('📣 Push Notification', options)
+  );
+});
