@@ -4,73 +4,18 @@
   <meta charset="UTF-8" />
   <title>Mava</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="manifest" href="https://progressier.app/3HhoUE9IzFxgDe2LARm8/progressier.json"/>
 <script defer src="https://progressier.app/3HhoUE9IzFxgDe2LARm8/script.js"></script> 
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#317EFB">
 <link rel="icon" href="/icons/icon-192x192.png" type="image/png">
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => {
-          console.log('✅ Service Worker registered with scope:', reg.scope);
-        })
-        .catch(err => {
-          console.error('❌ Service Worker registration failed:', err);
-        });
-    });
-  }
 
 
 
 
 
-if ('serviceWorker' in navigator && 'SyncManager' in window) {
-  navigator.serviceWorker.ready.then(registration => {
-    return registration.sync.register('sync-data');
-  }).then(() => {
-    console.log('🔁 Background Sync registered');
-  }).catch(console.error);
-}
 
 
 
-if ('serviceWorker' in navigator && 'periodicSync' in registration) {
-  const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
-
-  if (status.state === 'granted') {
-    const registration = await navigator.serviceWorker.ready;
-    await registration.periodicSync.register('get-latest-content', {
-      minInterval: 24 * 60 * 60 * 1000 // مرة كل يوم
-    });
-    console.log('📅 Periodic Sync registered');
-  }
-}
-
-
-
-
-if ('Notification' in window && 'serviceWorker' in navigator) {
-  Notification.requestPermission().then(permission => {
-    if (permission === 'granted') {
-      navigator.serviceWorker.ready.then(reg => {
-        reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: '<YOUR_PUBLIC_VAPID_KEY>' // تحتاج توليدها
-        }).then(sub => {
-          console.log('✅ Push subscribed:', sub);
-        });
-      });
-    }
-  });
-}
-
-
-
-
-
-</script>
 
 
   <!-- Bootstrap 5 RTL -->
