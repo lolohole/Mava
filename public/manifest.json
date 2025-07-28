@@ -58,7 +58,7 @@
       "label": "User profile page"
     }
   ],
-  "iarc_rating_id": "e1234567890",  
+  "iarc_rating_id": "e1234567890",
   "prefer_related_applications": true,
   "related_applications": [
     {
@@ -73,15 +73,3 @@
   ],
   "id": "mava"
 }
-
-
-"permissions": [
-  "push",
-  "periodic-background-sync",
-  "background-sync",
-  "notifications"
-],
-"background": {
-  "service_worker": "service-worker.js"
-},
-"gcm_sender_id": "103953800507" // Required by FCM if تستخدم Firebase
