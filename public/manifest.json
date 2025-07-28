@@ -2,9 +2,20 @@
   "name": "Mava",
   "short_name": "Mava",
   "start_url": "/",
+  "scope": "/",
+  "scope_extensions": [
+    {
+      "origin": "https://mava-social.app",
+      "path": "/"
+    }
+  ],
   "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#317EFB",
+  "orientation": "natural",
+  "dir": "ltr",
+  "lang": "en",
+  "description": "Mava is a modern social networking platform that helps people connect, share, and engage in a vibrant digital space.",
   "icons": [
     {
       "src": "/icons/icon.png",
@@ -17,9 +28,6 @@
       "type": "image/png"
     }
   ],
-  "id": "mava",
-  "lang": "en",
-  "orientation": "natural",
   "display_override": [
     "browser",
     "fullscreen",
@@ -33,7 +41,6 @@
   "share_target": {
     "method": "GET"
   },
-  "description": "Mava is a modern social networking platform that helps people connect, share, and engage in a vibrant digital space.",
   "launch_handler": {
     "client_mode": "focus-existing"
   },
@@ -50,5 +57,19 @@
       "type": "image/png",
       "label": "User profile page"
     }
-  ]
+  ],
+  "iarc_rating_id": "e1234567890",  
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.mava.app",
+      "id": "com.mava.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/id1234567890"
+    }
+  ],
+  "id": "mava"
 }
