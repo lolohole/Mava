@@ -5,7 +5,38 @@
 <head>
   <meta charset="UTF-8">
   <title>Notifications</title>
+ 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+      :root {
+  --post-bg-color: #ffffff;
+  --post-text-color: #000000;
+  --chat-bg-color: #f5f5f5;
+  --chat-text-color: #000000;
+  --notification-color: #ffeb3b;
+  --saved-posts-bg-color: #e0e0e0;
+}
+
+.post-card {
+  background-color: var(--post-bg-color);
+  color: var(--post-text-color);
+}
+
+.chat-box {
+  background-color: var(--chat-bg-color);
+  color: var(--chat-text-color);
+}
+
+.notification {
+  background-color: var(--notification-color);
+}
+
+.saved-post {
+  background-color: var(--saved-posts-bg-color);
+}
+
+    </style>
 </head>
 <body class="container mt-4">
 
@@ -16,28 +47,37 @@
     <button type="submit" class="btn btn-sm btn-success">Mark All as Read</button>
   </form>
 
-  <ul class="list-group">
-    <% if (notifications.length === 0) { %>
-      <li class="list-group-item text-center text-muted">No notifications.</li>
-    <% } else { %>
-      <% notifications.forEach(n => { %>
-        <li class="list-group-item d-flex justify-content-between align-items-start" style="<%= n.isRead ? 'opacity: 0.6;' : 'font-weight: bold;' %>">
-          <div class="ms-2 me-auto">
-            <div>
-              <% if (n.type === 'like' || n.type === 'comment') { %>
-                <a href="/posts/<%= n.post?._id %>"><%= n.message %></a>
-              <% } else if (n.type === 'follow') { %>
-                <a href="/users/<%= n.user?._id %>"><%= n.message %></a>
-              <% } else { %>
-                <%= n.message %>
-              <% } %>
-            </div>
-            <small class="text-muted"><%= n.createdAt.toLocaleDateString() %></small>
-          </div>
-        </li>
-      <% }) %>
-    <% } %>
-  </ul>
+ <ul class="list-group">
+  <% if (notifications.length === 0) { %>
+    <li class="list-group-item text-center text-muted">No notifications.</li>
+  <% } else { %>
+    <% notifications.forEach(n => { %>
+      <li class="list-group-item <%= n.isRead ? '' : 'fw-bold' %>" style="<%= n.isRead ? 'opacity: 0.6;' : 'font-weight: bold;' %>">
+        <% if (n.type === 'like' || n.type === 'comment') { %>
+          <a href="/posts/<%= n.post?._id %>"><%= n.message %></a>
+        <% } else if (n.type === 'follow') { %>
+          <a href="/users/<%= n.user?._id %>"><%= n.message %></a>
+        <% } else if (n.type === 'request' || n.type === 'order') { %>
+          <a href="/orders/notification/<%= n._id %>"><%= n.message %></a>
+        <% } else { %>
+          <%= n.message %>
+        <% } %>
+        <br>
+        <small class="text-muted"><%= new Date(n.createdAt).toLocaleString() %></small>
+      </li>
+    <% }) %>
+  <% } %>
+</ul>
+
+
+   <script>
+    const theme = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
+
+for (const [key, val] of Object.entries(theme)) {
+  document.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, "-$1").toLowerCase(), val);
+}
+
+   </script>
 
 </body>
 </html>
