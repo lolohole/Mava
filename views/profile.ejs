@@ -1,4 +1,4 @@
-<!DOCTYPE html>       
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-<!-- Updated: 2025-07-27 -->
 
 <script>
     window.addEventListener('DOMContentLoaded', () => {
@@ -420,7 +419,6 @@
   </script>
 <% } %>
 
-
 <div class="row">
   <% if (!posts || posts.length === 0) { %>
     <p class="text-center text-muted">No posts yet.</p>
@@ -429,11 +427,11 @@
       <div class="col-md-6 col-lg-4 mb-4">
         <div class="card">
           <% if (post.mediaType === 'image') { %>
-            <img src="<%= post.media %>" class="card-img-top" alt="Post Image" style="max-height: 250px; object-fit: cover;" />
-          <% } else { %>
+            <img src="<%= post.media %>" class="card-img-top" alt="Post Image" style="max-height: 250px; object-fit: cover;">
+          <% } else if (post.mediaType === 'video') { %>
             <video controls class="w-100" style="max-height: 250px; object-fit: cover;">
               <source src="<%= post.media %>" type="video/mp4">
-              Your browser does not support video.
+              Your browser does not support video playback.
             </video>
           <% } %>
           <div class="card-body">
@@ -449,45 +447,47 @@
 </div>
 
 
+
 <!-- Request Modal -->
 <!-- Modal for Request -->
 <div class="modal fade" id="requestModal" tabindex="-1" aria-labelledby="requestModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
-      <form id="orderForm" action="/submit-order" method="POST"> <!-- Modify the action URL as needed -->
-        <input type="hidden" name="sellerId" value="<%= profileUser._id %>" />
-        <input type="hidden" name="sellerUsername" value="<%= profileUser.username %>" />
-        <input type="hidden" name="serviceId" id="serviceId" value="" /> <!-- Hidden field for service ID -->
+     <form id="orderForm">
+  <input type="hidden" name="sellerId" value="<%= profileUser._id %>" />
+  <input type="hidden" name="serviceId" id="serviceId" value="" />
 
-        <div class="mb-3">
-          <label for="productName" class="form-label">Request Title / Service</label>
-          <input type="text" class="form-control" name="productName" id="productName" required />
-        </div>
+  <div class="mb-3">
+    <label for="productName" class="form-label">Request Title / Service</label>
+    <input type="text" class="form-control" name="productName" id="productName" required />
+  </div>
 
-        <div class="mb-3">
-          <label for="details" class="form-label">Request Details</label>
-          <textarea class="form-control" name="details" id="details" rows="4" required></textarea>
-        </div>
+  <div class="mb-3">
+    <label for="details" class="form-label">Request Details</label>
+    <textarea class="form-control" name="productDescription" id="details" rows="4" required></textarea>
+  </div>
 
-        <div class="mb-3">
-          <label for="budget" class="form-label">Proposed Budget (in USD)</label>
-          <input type="number" class="form-control" name="budget" id="budget" min="1" />
-        </div>
+  <div class="mb-3">
+    <label for="budget" class="form-label">Proposed Budget (in USD)</label>
+    <input type="number" class="form-control" name="proposedBudget" id="budget" min="1" required />
+  </div>
 
-        <div id="formResult" class="text-center mb-3"></div>
-        <div class="mb-3">
-  <label for="buyerEmail" class="form-label">Your Email</label>
-  <input type="email" class="form-control" id="buyerEmail" value="<%= currentUser.email %>" readonly />
-</div>
+  <div class="mb-3">
+    <label for="buyerEmail" class="form-label">Your Email</label>
+    <input type="email" class="form-control" id="buyerEmail" value="<%= currentUser.email %>" readonly />
+  </div>
 
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Submit Request</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </form>
+  <div id="formResult" class="text-center mb-3"></div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-success">Submit Request</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  </div>
+</form>
+
     </div>
   </div>
 </div>
+
 <!-- Services Modal -->
 <div class="modal fade" id="servicesModal" tabindex="-1" aria-labelledby="servicesModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
   <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -590,6 +590,51 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // التفاعل مع النموذج عند الإرسال
+  document.getElementById('orderForm').addEventListener('submit', async function(event) {
+    event.preventDefault();  // منع الإرسال التقليدي للنموذج
+
+    const form = event.target;  // الحصول على النموذج
+    const formData = new FormData(form);  // الحصول على بيانات النموذج
+
+    // تحويل بيانات FormData إلى JSON
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    try {
+      // إرسال البيانات إلى السيرفر باستخدام Fetch API
+      const response = await fetch('/orders/submit-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',  // نوع البيانات التي يتم إرسالها
+        },
+        body: JSON.stringify(data),  // تحويل البيانات إلى JSON
+      });
+
+      const result = await response.json();  // الحصول على الرد من السيرفر
+
+      // إذا تم إرسال الطلب بنجاح
+      const formResult = document.getElementById('formResult');
+      if (response.ok) {
+        formResult.style.color = 'green';
+        formResult.textContent = result.message || 'Request sent successfully.';
+        form.reset();  // إعادة تعيين النموذج بعد الإرسال
+      } else {
+        formResult.style.color = 'red';
+        formResult.textContent = result.error || 'Failed to send request.';
+      }
+    } catch (error) {
+      // إذا حدث خطأ أثناء الإرسال
+      document.getElementById('formResult').textContent = 'Error sending request.';
+      console.error('Fetch error:', error);
+    }
+  });
+</script>
+
+
+<script>
   // This function is called when the user clicks on "اطلب الآن"
   function setServiceId(serviceId, serviceName) {
     // Set the hidden serviceId field in the order form
@@ -626,7 +671,7 @@
     }
 
     try {
-      const res = await fetch('/orders', {
+      const res = await fetch('/orders/submit-order', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
@@ -868,15 +913,6 @@
     showRandomCanvas();
     setInterval(showRandomCanvas, 10000); // كل 10 ثواني
   </script>
-<script>
-  const socket = io(); // الاتصال بالسيرفر
 
-  <% if (currentUser) { %>
-    // إرسال ID المستخدم للسيرفر لتحديث الحالة
-    socket.emit('register', "<%= currentUser._id %>");
-  <% } %>
-</script>
 </body>
 </html>
-
-
