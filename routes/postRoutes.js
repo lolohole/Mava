@@ -6,69 +6,81 @@ const Notification = require('../models/Notification');
 const auth = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const path = require('path');
+const util = require('util');
 
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-
-// إعداد Cloudinary
 cloudinary.config({
-  cloud_name: 'djsi7vcsl',  // استبدلها بـ cloud_name الخاص بك من Cloudinary
-  api_key: '616254387969826',        // استبدلها بـ api_key الخاص بك من Cloudinary
-  api_secret: 'F1uc2OzqIRqOWNKAzzkfBNV1ERM'   // استبدلها بـ api_secret الخاص بك من Cloudinary
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
 });
 
-// إعداد multer لاستخدام Cloudinary storage
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'posts',  // استبدلها باسم المجلد الذي تريد تخزين الصور فيه في Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png'],
-    transformation: [{ width: 500, height: 500, crop: 'limit' }] // لتحديد الحجم والتصفية
-  },
+// إعداد التخزين لكل نوع ملف
+const imageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'images', allowed_formats: ['jpg','png','jpeg'] },
+});
+const videoStorage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'videos', resource_type: 'video', allowed_formats: ['mp4','mov','avi'] },
 });
 
-const upload = multer({ storage });
+// انشئ upload باستخدام function تختار التخزين المناسب لكل ملف
+const upload = multer({
+  storage: {
+    _handleFile(req, file, cb) {
+      const dest = file.mimetype.startsWith('video/') ? videoStorage : imageStorage;
+      dest._handleFile(req, file, cb);
+    },
+    _removeFile(req, file, cb) {
+      const dest = file.mimetype.startsWith('video/') ? videoStorage : imageStorage;
+      dest._removeFile(req, file, cb);
+    }
+  }
+});
+
+const uploadImage = multer({ storage: imageStorage });
+const uploadVideo = multer({ storage: videoStorage });
 
 router.get('/new', auth, (req, res) => {
   res.render('createPost', {layout: false});
 });
 
-router.post('/add', auth, upload.single('image'), async (req, res) => {
+router.post('/add', auth, upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+]), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'الصورة مطلوبة' });
+    console.log('📦 req.files:', util.inspect(req.files, { depth: null }));
+    console.log('📝 req.body:', req.body);
 
-    // استبدال المسار المحلي بالصورة المخزنة على Cloudinary
+    const imageFile = req.files?.image?.[0];
+    const videoFile = req.files?.video?.[0];
+
+    if (!imageFile && !videoFile) {
+      return res.status(400).send('Image or video is required.');
+    }
+
+    const media = videoFile ? videoFile.path : imageFile.path;
+    const mediaType = videoFile ? 'video' : 'image';
+
     const post = new Post({
       user: req.user._id,
-      image: req.file.path, // يحتوي على URL من Cloudinary
-      caption: req.body.caption || ''
+      caption: req.body.caption || '',
+      media,
+      mediaType
     });
-
     await post.save();
+
     res.redirect('/users/' + req.user._id);
   } catch (err) {
-    console.error('Error creating post:', err);
-    res.status(500).json({ error: 'فشل في إضافة المنشور' });
+    console.error('🔥 Error saving post:', util.inspect(err, { depth: null }));
+    res.status(500).send('Failed to create post.');
   }
 });
 
-router.get('/', async (req, res) => {
-  try {
-    const posts = await Post.find()
-      .populate('user', 'username avatar')
-      .populate('comments.user', 'username')
-      .sort({ createdAt: -1 });
 
-    res.render('index', {
-      posts,
-      currentUser: req.user || null,
-      profileUser: null
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
-  }
-});
 
 router.post('/like/:id', auth, async (req, res) => {
   try {
@@ -255,13 +267,13 @@ router.post('/savePost/:postId', auth, async (req, res) => {
     return res.status(400).json({ message: 'Already saved' });
   }
 });
+// GET صفحة تعديل المنشور
 router.get('/edit/:id', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).send('Post not found');
 
-    // تأكد إن المستخدم هو صاحب المنشور
-    if (post.user.toString() !== req.user._id.toString()) {
+    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
       return res.status(403).send('Unauthorized');
     }
 
@@ -272,16 +284,14 @@ router.get('/edit/:id', auth, async (req, res) => {
   }
 });
 
-// POST تحديث المنشور
-router.post('/edit/:id', auth, upload.single('image'), async (req, res) => {
+// POST تعديل المنشور مع رفع الملفات
+router.post('/edit/:id', auth, upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+]), async (req, res) => {
   try {
-    console.log('req.params.id:', req.params.id);
-    console.log('req.body:', req.body);
-
     const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).send('Post not found');
-    }
+    if (!post) return res.status(404).send('Post not found');
 
     if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
       return res.status(403).send('Unauthorized');
@@ -289,9 +299,15 @@ router.post('/edit/:id', auth, upload.single('image'), async (req, res) => {
 
     post.caption = req.body.caption || post.caption;
 
-    if (req.file) {
-      // لو بتستخدم Cloudinary كما في باقي الراوترات
-      post.image = req.file.path;  // هذا url الصورة من Cloudinary
+    const imageFile = req.files['image']?.[0];
+    const videoFile = req.files['video']?.[0];
+
+    if (imageFile) {
+      post.media = imageFile.path;
+      post.mediaType = 'image';
+    } else if (videoFile) {
+      post.media = videoFile.path;
+      post.mediaType = 'video';
     }
 
     await post.save();
@@ -302,7 +318,6 @@ router.post('/edit/:id', auth, upload.single('image'), async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 
 // DELETE post
 router.post('/delete/:id', auth, async (req, res) => {
@@ -329,53 +344,6 @@ router.post('/delete/:id', auth, async (req, res) => {
 });
 
 // GET edit page
-router.get('/edit/:id', auth, async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).send('Post not found');
-    }
-    // تحقق صلاحية المستخدم
-    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      return res.status(403).send('Unauthorized');
-    }
-    res.render('posts/edit', { post, currentUser: req.user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
-  }
-});
 
-// POST edit post
-router.post('/edit/:id', auth, async (req, res) => {
-  try {
-    console.log('req.params.id:', req.params.id);
-    console.log('req.body:', req.body);
-
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).send('Post not found');
-    }
-
-    console.log('Found post:', post);
-
-    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      return res.status(403).send('Unauthorized');
-    }
-
-    post.caption = req.body.caption || post.caption;
-
-    if (req.file) {
-      post.image = '/uploads/' + req.file.filename;
-    }
-
-    await post.save();
-
-    res.redirect('/posts/' + post._id);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
-  }
-});
 
 module.exports = router;
