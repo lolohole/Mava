@@ -227,132 +227,121 @@
   </nav>
 
   <!-- Main content -->
-  <div class="container mt-4">
-    <% if (posts && posts.length > 0) { %>
-      <% posts.forEach(post => { %>
-        <div class="post-card" data-post-id="<%= post._id %>">
-          <div class="post-header">
-           <% if (post.user) { %>
-  
-<% } else { %>
-  <a href="#">
-    <img src="/default-avatar.png" />
-  </a>
-  <strong>مستخدم غير معروف</strong>
-<% } %>
+ <!-- Main content -->
+<div class="container mt-4">
+  <% if (posts && posts.length > 0) { %>
+    <% posts.forEach(post => { %>
+      <div class="post-card" data-post-id="<%= post._id %>">
+        <div class="post-header">
+          <% if (post.user) { %>
+            <a href="/users/<%= post.user._id %>">
+              <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
+            </a>
+            <strong><%= post.user.username %></strong>
+          <% } else { %>
+            <a href="#"><img src="/default-avatar.png" /></a>
+            <strong>مستخدم غير معروف</strong>
+          <% } %>
+        </div>
 
-         <% if (post.user) { %>
-  <a href="/users/<%= post.user._id %>">
-    <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
-  </a>
-  <strong><%= post.user.username %></strong>
-<% } else { %>
-  <a href="#">
-    <img src="/default-avatar.png" />
-  </a>
-  <strong>مستخدم غير معروف</strong>
-<% } %>
+        <!-- عرض الوسائط -->
+        <% if (post.mediaType === 'image') { %>
+          <img class="post-image" src="<%= post.media %>" alt="Post Image" />
+        <% } else if (post.mediaType === 'video') { %>
+          <video class="post-video" controls style="width: 100%; border-radius: 5px;">
+            <source src="<%= post.media %>" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        <% } %>
 
-          </div>
+        <div class="post-actions">
+          <div class="left-icons">
+            <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
+            <i class="bi bi-chat" title="Comment" role="button"></i>
 
-          <img class="post-image" src="<%= post.image %>" alt="Post Image" />
+            <% if (currentUser) { %>
+              <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
+            <% } %>
 
-          <div class="post-actions">
-            <div class="left-icons">
-              <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
-              <i class="bi bi-chat" title="Comment" role="button"></i>
-
-              <% if (currentUser) { %>
-                <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
-              <% } %>
-
-              <div class="reaction-group">
-                <i class="toggle-reactions bi bi-emoji-smile"></i>
-                <div class="reactions-popup" style="display:none;">
-                  <i class="bi bi-heart-fill reaction-icon" data-type="heart"></i>
-                  <i class="bi bi-hand-thumbs-up-fill reaction-icon" data-type="clap"></i>
-                  <i class="bi bi-emoji-frown-fill reaction-icon" data-type="sad"></i>
-                </div>
+            <div class="reaction-group">
+              <i class="toggle-reactions bi bi-emoji-smile"></i>
+              <div class="reactions-popup" style="display:none;">
+                <i class="bi bi-heart-fill reaction-icon" data-type="heart"></i>
+                <i class="bi bi-hand-thumbs-up-fill reaction-icon" data-type="clap"></i>
+                <i class="bi bi-emoji-frown-fill reaction-icon" data-type="sad"></i>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="likes-count">
-            <%= post.likes.length %> Likes
-          </div>
+        <div class="likes-count">
+          <%= post.likes.length %> Likes
+        </div>
 
-          <div class="post-caption">
-            <% if (post.user) { %>
-  <strong><%= post.user.username %></strong> <%= post.caption %>
-<% } else { %>
-  <strong>مستخدم غير معروف</strong> <%= post.caption %>
-<% } %>
-
-          </div>
-
-         <div class="comments-section">
-  <% post.comments.slice(0, 3).forEach(comment => { %>  <!-- عرض أول 3 تعليقات فقط -->
-    <% if (comment.user) { %>
-      <p><strong><%= comment.user.username %>:</strong></p>
-
-      <% if(comment.text && comment.text.trim().length > 0) { %>
-        <p><%= comment.text %></p>
-      <% } %>
-
-      <% if(comment.image) { %>
-        <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;" />
-      <% } %>
-
-      <% if(comment.video) { %>
-        <video controls style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;">
-          <source src="<%= comment.video %>" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      <% } %>
-
-    <% } else { %>
-      <p><strong>مستخدم غير معروف:</strong></p>
-      <p><%= comment.text %></p>
-      <% if(comment.image) { %>
-        <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;" />
-      <% } %>
-      <% if(comment.video) { %>
-        <video controls style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;">
-          <source src="<%= comment.video %>" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      <% } %>
-    <% } %>
-  <% }) %>
-
-  <% if (post.comments.length > 3) { %>
-    <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
-  <% } %>
-</div>
-
-<form class="save-post-form" data-post-id="<%= post._id %>">
-  <% if (currentUser && currentUser.savedPosts && currentUser.savedPosts.includes(post._id.toString())) { %>
-    <button type="submit" class="save-btn saved">🗑  Remove save</button>
-  <% } else { %>
-    <button type="submit" class="save-btn">💾 save</button>
-  <% } %>
-</form>
-
-
-          <% if (currentUser) { %>
-            <form class="add-comment" data-post-id="<%= post._id %>">
-              <input type="text" name="comment" placeholder="Add a comment..." autocomplete="off" required />
-              <button type="submit">Post</button>
-            </form>
+        <div class="post-caption">
+          <% if (post.user) { %>
+            <strong><%= post.user.username %></strong> <%= post.caption %>
           <% } else { %>
-            <p class="text-center text-muted">Log in to comment</p>
+            <strong>مستخدم غير معروف</strong> <%= post.caption %>
           <% } %>
         </div>
-      <% }) %>
-    <% } else { %>
-      <p class="text-center text-muted">No posts yet.</p>
-    <% } %>
-  </div>
+
+        <div class="comments-section">
+          <% post.comments.slice(0, 3).forEach(comment => { %>
+            <% if (comment.user) { %>
+              <p><strong><%= comment.user.username %>:</strong></p>
+              <% if(comment.text && comment.text.trim().length > 0) { %>
+                <p><%= comment.text %></p>
+              <% } %>
+              <% if(comment.image) { %>
+                <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; border-radius: 8px;" />
+              <% } %>
+              <% if(comment.video) { %>
+                <video controls style="max-width: 100%; border-radius: 8px;">
+                  <source src="<%= comment.video %>" type="video/mp4" />
+                </video>
+              <% } %>
+            <% } else { %>
+              <p><strong>مستخدم غير معروف:</strong></p>
+              <p><%= comment.text %></p>
+              <% if(comment.image) { %>
+                <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; border-radius: 8px;" />
+              <% } %>
+              <% if(comment.video) { %>
+                <video controls style="max-width: 100%; border-radius: 8px;">
+                  <source src="<%= comment.video %>" type="video/mp4" />
+                </video>
+              <% } %>
+            <% } %>
+          <% }) %>
+
+          <% if (post.comments.length > 3) { %>
+            <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
+          <% } %>
+        </div>
+
+        <form class="save-post-form" data-post-id="<%= post._id %>">
+          <% if (currentUser && currentUser.savedPosts && currentUser.savedPosts.includes(post._id.toString())) { %>
+            <button type="submit" class="save-btn saved">🗑 Remove save</button>
+          <% } else { %>
+            <button type="submit" class="save-btn">💾 Save</button>
+          <% } %>
+        </form>
+
+        <% if (currentUser) { %>
+          <form class="add-comment" data-post-id="<%= post._id %>">
+            <input type="text" name="comment" placeholder="Add a comment..." autocomplete="off" required />
+            <button type="submit">Post</button>
+          </form>
+        <% } else { %>
+          <p class="text-center text-muted">Log in to comment</p>
+        <% } %>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p class="text-center text-muted">No posts yet.</p>
+  <% } %>
+</div>
 
   <!-- Bottom nav -->
   <% if (currentUser) { %>
@@ -655,6 +644,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
