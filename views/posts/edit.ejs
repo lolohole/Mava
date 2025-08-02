@@ -11,6 +11,7 @@
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       padding-bottom: 50px;
     }
+
     .container {
       max-width: 600px;
       margin-top: 40px;
@@ -19,22 +20,27 @@
       border-radius: 8px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
+
     h1 {
       font-weight: 700;
       margin-bottom: 30px;
       color: #222;
     }
+
     label {
       font-weight: 600;
       margin-top: 15px;
     }
+
     textarea {
       resize: vertical;
     }
+
     .btn-save {
       margin-top: 20px;
     }
-    .post-image-preview {
+
+    .post-media-preview {
       max-width: 100%;
       max-height: 300px;
       margin-top: 10px;
@@ -50,27 +56,42 @@
     <h1>Edit Your Post</h1>
 
     <form action="/posts/edit/<%= post._id %>" method="POST" enctype="multipart/form-data">
+      
+      <!-- عرض الوسيط الحالي (صورة أو فيديو) -->
       <div class="mb-3">
-        <label for="image">Current Image:</label><br />
+        <label>Current Media:</label><br />
         <% if (post.image) { %>
-          <img src="<%= post.image %>" alt="Post Image" class="post-image-preview" />
+          <img src="<%= post.image %>" alt="Post Image" class="post-media-preview" />
+        <% } else if (post.video) { %>
+          <video class="post-media-preview" controls>
+            <source src="<%= post.video %>" type="video/mp4">
+            Your browser does not support video.
+          </video>
         <% } else { %>
-          <p>No image uploaded.</p>
+          <p>No media uploaded.</p>
         <% } %>
       </div>
 
+      <!-- حقل لرفع صورة جديدة -->
       <div class="mb-3">
-        <label for="image">Change Image (optional):</label>
+        <label for="image">Replace with New Image (optional):</label>
         <input type="file" id="image" name="image" accept="image/*" class="form-control" />
       </div>
 
+      <!-- حقل لرفع فيديو جديد -->
+      <div class="mb-3">
+        <label for="video">Or Replace with New Video (optional):</label>
+        <input type="file" id="video" name="video" accept="video/*" class="form-control" />
+      </div>
+
+      <!-- التعليق -->
       <div class="mb-3">
         <label for="caption">Caption:</label>
         <textarea id="caption" name="caption" rows="4" class="form-control" required><%= post.caption %></textarea>
       </div>
 
       <button type="submit" class="btn btn-primary btn-save">Save Changes</button>
-      <a href="/admin/dashboard" class="btn btn-secondary btn-save ms-2">Cancel</a>
+      <a href="/users/<%= currentUser._id %>" class="btn btn-secondary btn-save ms-2">Cancel</a>
     </form>
   </div>
 
