@@ -12,7 +12,7 @@
     .post-container { max-width: 600px; margin: 30px auto; background: white; border: 1px solid #ddd; border-radius: 10px; }
     .post-header, .post-footer { padding: 10px; display: flex; align-items: center; }
     .post-header img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
-    .post-image { width: 100%; height: auto; border-bottom: 1px solid #eee; }
+    .post-image, .post-video { width: 100%; height: auto; border-bottom: 1px solid #eee; }
     .btn-like, .btn-comment, .btn-bookmark { cursor: pointer; font-size: 20px; margin-right: 10px; }
     .stats { font-size: 14px; margin: 10px; font-weight: bold; }
     canvas { max-width: 100%; display: block; margin: 20px auto; }
@@ -41,8 +41,13 @@
     <strong><%= post.user.username %></strong>
   </div>
 
-  <% if (post.image) { %>
-    <img src="<%= post.image %>" class="post-image" alt="Post Image">
+  <% if (post.mediaType === 'image') { %>
+    <img src="<%= post.media %>" class="post-image" alt="Post Image">
+  <% } else if (post.mediaType === 'video') { %>
+    <video class="post-video" controls>
+      <source src="<%= post.media %>" type="video/mp4">
+      متصفحك لا يدعم تشغيل الفيديو.
+    </video>
   <% } %>
 
   <div class="post-footer">
@@ -73,41 +78,30 @@
 
   <div class="px-3 pb-3">
     <% post.comments.forEach(c => { %>
-      <p><strong><%= c.user.username %>:</strong> <%= c.text %></p>
-    <% }) %>
-  </div>
+<p><strong><%= c.user.username %>:</strong> <%= c.text %></p>
+<% }) %>
 
-  <% if (currentUser) { %>
-    <form class="px-3 pb-3" id="comment-form">
-      <div class="input-group">
-        <input type="text" name="text" class="form-control" placeholder="Add a comment..." required>
-        <button class="btn btn-primary" type="submit">Post</button>
-      </div>
-    </form>
-  <% } else { %>
-    <p class="text-center text-muted pb-3">Login to comment.</p>
-  <% } %>
-
-  <% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %>
-    <canvas id="analytics-chart" height="150"></canvas>
-  <% } %>
 </div>
-
 <% if (currentUser) { %>
-  <div class="bottom-nav d-lg-none position-fixed bottom-0 w-100 bg-white border-top py-2 d-flex justify-content-around">
-    <a href="/"><i class="bi bi-house-door-fill"></i><br>Home</a>
-    <a href="/posts/new"><i class="bi bi-plus-square-fill"></i><br>New</a>
-    <a href="/users/<%= currentUser._id %>"><i class="bi bi-person-circle"></i><br>Profile</a>
-  </div>
+<form class="px-3 pb-3" id="comment-form">
+<div class="input-group">
+<input type="text" name="text" class="form-control" placeholder="Add a comment..." required>
+<button class="btn btn-primary" type="submit">Post</button>
+</div>
+</form>
+<% } else { %>
+<p class="text-center text-muted pb-3">Login to comment.</p>
 <% } %>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+<% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %>
+<canvas id="analytics-chart" height="150"></canvas>
+<% } %>
 
+</div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <script src="/socket.io/socket.io.js"></script> <script> document.querySelectorAll('.save-post-form').forEach(form => { form.addEventListener('submit', async (e) => { e.preventDefault(); const postId = form.getAttribute('data-post-id'); const button = form.querySelector('button'); const isSaved = button.classList.contains('saved'); try { const response = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } }); const result = await response.json(); if (response.ok) { if (isSaved) { button.classList.remove('saved'); button.textContent = '💾 Save'; } else { button.classList.add('saved'); button.textContent = '🗑 Remove Saved'; } } else { alert(result.message || 'An error occurred while saving.'); } } catch (err) { console.error(err); alert('Unexpected error occurred.'); } }); }); const socket = io(); <% if (currentUser) { %> socket.emit('register', '<%= currentUser._id %>'); socket.on('newNotification', data => alert(data.message)); <% } %> document.querySelector('.btn-like').addEventListener('click', async () => { const res = await fetch('/posts/like/<%= post._id %>', { method: 'POST' }); const data = await res.json(); location.reload(); }); <% if (currentUser) { %> document.querySelector('.btn-bookmark').addEventListener('click', async () => { await fetch('/posts/bookmark/<%= post._id %>', { method: 'POST' }); location.reload(); }); document.getElementById('comment-form').addEventListener('submit', async e => { e.preventDefault(); const text = e.target.text.value.trim(); if (!text) return; await fetch('/posts/comment/<%= post._id %>', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ text }) }); location.reload(); }); <% } %> <% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %> const ctx = document.getElementById('analytics-chart').getContext('2d'); new Chart(ctx, { type: 'doughnut', data: { labels: ['Likes', 'Comments'], datasets: [{ data: [<%= post.likes.length %>, <%= post.comments.length %>], backgroundColor: ['#dc3545', '#0d6efd'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } }); <% } %> </script> </body> </html> 
 <script>
+  // حفظ/إزالة الحفظ (Save/Unsave) المنشور
   document.querySelectorAll('.save-post-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const postId = form.getAttribute('data-post-id');
       const button = form.querySelector('button');
@@ -116,9 +110,7 @@
       try {
         const response = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         });
 
         const result = await response.json();
@@ -132,59 +124,74 @@
             button.textContent = '🗑 Remove Saved';
           }
         } else {
-          alert(result.message || 'An error occurred while saving.');
+          alert(result.message || JSON.stringify(result));
         }
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error(error);
         alert('Unexpected error occurred.');
       }
     });
   });
-</script>
 
-<script>
-  const socket = io();
-  <% if (currentUser) { %>
-    socket.emit('register', '<%= currentUser._id %>');
-    socket.on('newNotification', data => alert(data.message));
-  <% } %>
-
-  document.querySelector('.btn-like').addEventListener('click', async () => {
-    const res = await fetch('/posts/like/<%= post._id %>', { method: 'POST' });
-    const data = await res.json();
-    location.reload();
-  });
-
-  <% if (currentUser) { %>
-    document.querySelector('.btn-bookmark').addEventListener('click', async () => {
-      await fetch('/posts/bookmark/<%= post._id %>', { method: 'POST' });
-      location.reload();
+  // زر اللايك
+  const likeBtn = document.querySelector('.btn-like');
+  if (likeBtn) {
+    likeBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch(`/posts/like/<%= post._id %>`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          location.reload(); // يمكنك تحسينها لتحديث عدد اللايكات فقط بدون إعادة تحميل
+        } else {
+          alert(data.message || JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to like the post.');
+      }
     });
+  }
 
-    document.getElementById('comment-form').addEventListener('submit', async e => {
+  // زر الحفظ/الإشارة المرجعية Bookmark
+  const bookmarkBtn = document.querySelector('.btn-bookmark');
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener('click', async () => {
+      try {
+        await fetch(`/posts/bookmark/<%= post._id %>`, { method: 'POST' });
+        location.reload();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to toggle bookmark.');
+      }
+    });
+  }
+
+  // إضافة تعليق (Comment)
+  const commentForm = document.getElementById('comment-form');
+  if (commentForm) {
+    commentForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const text = e.target.text.value.trim();
+      const textInput = commentForm.querySelector('input[name="text"]');
+      const text = textInput.value.trim();
       if (!text) return;
-      await fetch('/posts/comment/<%= post._id %>', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ text })
-      });
-      location.reload();
-    });
-  <% } %>
 
-  <% if (currentUser && currentUser._id.toString() === post.user._id.toString()) { %>
-    const ctx = document.getElementById('analytics-chart').getContext('2d');
-    new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Likes', 'Comments'],
-        datasets: [{ data: [<%= post.likes.length %>, <%= post.comments.length %>], backgroundColor: ['#dc3545', '#0d6efd'] }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      try {
+        const response = await fetch(`/posts/comment/<%= post._id %>`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const result = await response.json();
+        if (response.ok) {
+          textInput.value = '';
+          location.reload(); // يمكن تحسينها بعرض التعليق الجديد دون تحميل الصفحة
+        } else {
+          alert(result.message || JSON.stringify(result));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to add comment.');
+      }
     });
-  <% } %>
+  }
 </script>
-</body>
-</html>
