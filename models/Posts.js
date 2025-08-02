@@ -6,6 +6,8 @@ const postSchema = new Schema({
   image: String,
   video: { type: String },  // رابط الفيديو في Cloudinary أو مكان آخر
   link: { type: String },   // رابط خارجي، مثلاً YouTube, موقع ... 
+  mediaType: String,
+
   caption: String,
   likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   comments: [{
@@ -29,3 +31,4 @@ const postSchema = new Schema({
 });
 
 module.exports = mongoose.model('Post', postSchema);
+
