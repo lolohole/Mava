@@ -420,29 +420,34 @@
   </script>
 <% } %>
 
-<div class="row">
 
-    <% if (posts.length === 0) { %>
-      <p class="text-center text-muted">No posts yet.</p>
-    <% } else { %>
-      <% posts.forEach(post => { %>
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card post-card" class="card post-card">
-            <% if (post.image) { %>
-              <img src="<%= post.image %>" class="card-img-top post-image" alt="Post Image" />
-            <% } %>
-            <div class="card-body">
-              <p><strong><%= profileUser.username %>:</strong> <%= post.caption %></p>
-              <p class="text-muted"><%= post.likes.length %> Likes | <%= post.comments.length %> Comments</p>
-              <a href="/posts/<%= post._id %>" class="btn btn-sm btn-outline-primary">View Post</a>
-              
-            </div>
+<div class="row">
+  <% if (!posts || posts.length === 0) { %>
+    <p class="text-center text-muted">No posts yet.</p>
+  <% } else { %>
+    <% posts.forEach(post => { %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+          <% if (post.mediaType === 'image') { %>
+            <img src="<%= post.media %>" class="card-img-top" alt="Post Image" style="max-height: 250px; object-fit: cover;" />
+          <% } else { %>
+            <video controls class="w-100" style="max-height: 250px; object-fit: cover;">
+              <source src="<%= post.media %>" type="video/mp4">
+              Your browser does not support video.
+            </video>
+          <% } %>
+          <div class="card-body">
+            <p><strong><%= profileUser.username %></strong></p>
+            <p><%= post.caption %></p>
+            <small class="text-muted"><%= post.likes.length %> Likes • <%= post.comments.length %> Comments</small>
+            <a href="/posts/<%= post._id %>" class="btn btn-sm btn-outline-primary mt-2">View Post</a>
           </div>
         </div>
-      <% }) %>
-    <% } %>
-  </div>
+      </div>
+    <% }) %>
+  <% } %>
 </div>
+
 
 <!-- Request Modal -->
 <!-- Modal for Request -->
@@ -873,3 +878,4 @@
 </script>
 </body>
 </html>
+
