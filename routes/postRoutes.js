@@ -345,5 +345,20 @@ router.post('/delete/:id', auth, async (req, res) => {
 
 // GET edit page
 
+router.post('/share/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    post.shares = (post.shares || 0) + 1;
+    await post.save();
+
+    res.json({ success: true, shares: post.shares });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error sharing post' });
+  }
+});
 
 module.exports = router;
+
