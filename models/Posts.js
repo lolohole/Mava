@@ -9,7 +9,10 @@ const postSchema = new Schema({
   caption: String,
   media: String,
 mediaType: String,
-
+shares: {
+    type: Number,
+    default: 0
+  },
   likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   comments: [{
     user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -32,3 +35,4 @@ mediaType: String,
 });
 
 module.exports = mongoose.model('Post', postSchema);
+
