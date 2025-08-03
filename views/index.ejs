@@ -231,6 +231,7 @@
 
   <!-- Main content -->
  <!-- Main content -->
+<!-- Main content -->
 <div class="container mt-4">
   <% if (posts && posts.length > 0) { %>
     <% posts.forEach(post => { %>
@@ -238,32 +239,32 @@
         <div class="post-header">
           <% if (post.user) { %>
             <a href="/users/<%= post.user._id %>">
-              <img src="<%= post.user.avatar || '/default-avatar.png' %>" />
+              <img src="<%= post.user.avatar || '/default-avatar.png' %>" class="avatar" />
             </a>
             <strong><%= post.user.username %></strong>
           <% } else { %>
-            <a href="#"><img src="/default-avatar.png" /></a>
-            <strong>مستخدم غير معروف</strong>
+            <img src="/default-avatar.png" class="avatar" />
+            <strong>Unknown User</strong>
           <% } %>
         </div>
 
-        <!-- عرض الوسائط -->
+        <!-- Media display -->
         <% if (post.mediaType === 'image') { %>
           <img class="post-image" src="<%= post.media %>" alt="Post Image" />
         <% } else if (post.mediaType === 'video') { %>
-          <video class="post-video" controls style="width: 100%; border-radius: 5px;">
+          <video class="post-video" controls>
             <source src="<%= post.media %>" type="video/mp4" />
-            Your browser does not support the video tag.
+            Your browser doesn’t support video.
           </video>
         <% } %>
 
         <div class="post-actions">
           <div class="left-icons">
             <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
-            <i class="bi bi-chat" title="Comment" role="button"></i>
+            <i class="bi bi-chat btn-comment" title="Comment" role="button"></i>
 
             <% if (currentUser) { %>
-              <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
+            //  <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
             <% } %>
 
             <div class="reaction-group">
@@ -274,7 +275,18 @@
                 <i class="bi bi-emoji-frown-fill reaction-icon" data-type="sad"></i>
               </div>
             </div>
+
+            <!-- Share button -->
+            <i class="bi bi-share btn-share" title="Share" role="button"></i>
           </div>
+        </div>
+
+        <!-- Share options panel -->
+        <div class="share-options p-2" style="display: none;">
+          <button class="btn btn-outline-secondary btn-sm copy-link">📋 Copy Link</button>
+          <button class="btn btn-outline-primary btn-sm whatsapp-share">WhatsApp</button>
+          <button class="btn btn-outline-info btn-sm telegram-share">Telegram</button>
+          <button class="btn btn-outline-success btn-sm facebook-share">Facebook</button>
         </div>
 
         <div class="likes-count">
@@ -285,46 +297,21 @@
           <% if (post.user) { %>
             <strong><%= post.user.username %></strong> <%= post.caption %>
           <% } else { %>
-            <strong>مستخدم غير معروف</strong> <%= post.caption %>
+            <strong>Unknown User</strong> <%= post.caption %>
           <% } %>
         </div>
 
         <div class="comments-section">
           <% post.comments.slice(0, 3).forEach(comment => { %>
-            <% if (comment.user) { %>
-              <p><strong><%= comment.user.username %>:</strong></p>
-              <% if(comment.text && comment.text.trim().length > 0) { %>
-                <p><%= comment.text %></p>
-              <% } %>
-              <% if(comment.image) { %>
-                <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; border-radius: 8px;" />
-              <% } %>
-              <% if(comment.video) { %>
-                <video controls style="max-width: 100%; border-radius: 8px;">
-                  <source src="<%= comment.video %>" type="video/mp4" />
-                </video>
-              <% } %>
-            <% } else { %>
-              <p><strong>مستخدم غير معروف:</strong></p>
-              <p><%= comment.text %></p>
-              <% if(comment.image) { %>
-                <img src="<%= comment.image %>" alt="Comment image" style="max-width: 100%; border-radius: 8px;" />
-              <% } %>
-              <% if(comment.video) { %>
-                <video controls style="max-width: 100%; border-radius: 8px;">
-                  <source src="<%= comment.video %>" type="video/mp4" />
-                </video>
-              <% } %>
-            <% } %>
+            <p><strong><%= comment.user?.username || 'Unknown' %>:</strong> <%= comment.text %></p>
           <% }) %>
-
           <% if (post.comments.length > 3) { %>
             <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
           <% } %>
         </div>
 
         <form class="save-post-form" data-post-id="<%= post._id %>">
-          <% if (currentUser && currentUser.savedPosts && currentUser.savedPosts.includes(post._id.toString())) { %>
+          <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
             <button type="submit" class="save-btn saved">🗑 Remove save</button>
           <% } else { %>
             <button type="submit" class="save-btn">💾 Save</button>
@@ -345,6 +332,67 @@
     <p class="text-center text-muted">No posts yet.</p>
   <% } %>
 </div>
+
+<!-- Toast for copy-link -->
+<div id="copy-toast" class="toast-notification">✅ Link copied!</div>
+
+<style>
+.avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 8px; }
+.post-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 24px; background: #fff; }
+.post-header { display: flex; align-items: center; margin-bottom: 8px; }
+.post-image, .post-video { width: 100%; border-radius: 5px; }
+.post-actions { margin-top: 8px; }
+.left-icons i { font-size: 1.4rem; margin-right: 8px; cursor: pointer; }
+.likes-count { font-weight: bold; margin: 8px 0; }
+.share-options { margin: 8px 0; }
+.toast-notification {
+  position: fixed; bottom: 30px; right: 30px;
+  background: #28a745; color: white; padding: 12px 20px;
+  border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  opacity: 0; visibility: hidden; transition: opacity 0.4s, visibility 0.4s;
+  z-index: 10000;
+}
+.toast-notification.show { opacity: 1; visibility: visible; }
+</style>
+
+<script>
+document.querySelectorAll('.post-card').forEach(card => {
+  const shareBtn = card.querySelector('.btn-share');
+  const shareOpts = card.querySelector('.share-options');
+  const copyBtn = card.querySelector('.copy-link');
+  const waBtn = card.querySelector('.whatsapp-share');
+  const tgBtn = card.querySelector('.telegram-share');
+  const fbBtn = card.querySelector('.facebook-share');
+  const toast = document.getElementById('copy-toast');
+
+  shareBtn.addEventListener('click', () => {
+    shareOpts.style.display = shareOpts.style.display === 'none' ? 'block' : 'none';
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const postUrl = `${window.location.origin}/posts/${card.getAttribute('data-post-id')}`;
+    navigator.clipboard.writeText(postUrl).then(() => {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+  });
+
+  waBtn.addEventListener('click', () => {
+    const postUrl = `${window.location.origin}/posts/${card.getAttribute('data-post-id')}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(postUrl)}`, '_blank');
+  });
+
+  tgBtn.addEventListener('click', () => {
+    const postUrl = `${window.location.origin}/posts/${card.getAttribute('data-post-id')}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(postUrl)}`, '_blank');
+  });
+
+  fbBtn.addEventListener('click', () => {
+    const postUrl = `${window.location.origin}/posts/${card.getAttribute('data-post-id')}`;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`, '_blank');
+  });
+});
+</script>
 
   <!-- Bottom nav -->
   <% if (currentUser) { %>
@@ -647,6 +695,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
