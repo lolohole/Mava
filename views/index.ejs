@@ -264,7 +264,9 @@
             <i class="bi bi-chat btn-comment" title="Comment" role="button"></i>
 
             <% if (currentUser) { %>
-            //  <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
+                   <!-- 
+  <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
+Media display -->
             <% } %>
 
             <div class="reaction-group">
@@ -695,6 +697,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
