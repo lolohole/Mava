@@ -1,6 +1,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -324,19 +326,18 @@ Media display -->
         </form>
 
         <% if (currentUser) { %>
-  <form class="add-comment mt-2" data-post-id="<%= post._id %>">
-    <div class="mb-2">
-      <input type="text" name="text" class="form-control" placeholder="Add a comment..." />
-    </div>
-    <div class="mb-2">
-      <input type="file" name="media" accept="image/*,video/*" class="form-control-file" />
-    </div>
-    <button type="submit" class="btn btn-primary btn-sm">Post</button>
-  </form>
-<% } else { %>
-  <p class="text-center text-muted">Log in to comment</p>
-<% } %>
-
+          <form class="add-comment" data-post-id="<%= post._id %>">
+            <input type="text" name="comment" placeholder="Add a comment..." autocomplete="off" required />
+            <button type="submit">Post</button>
+          </form>
+        <% } else { %>
+          <p class="text-center text-muted">Log in to comment</p>
+        <% } %>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p class="text-center text-muted">No posts yet.</p>
+  <% } %>
 </div>
 
 <!-- Toast for copy-link -->
@@ -453,187 +454,232 @@ document.querySelectorAll('.post-card').forEach(card => {
     });
   });
 </script>
- <script>
-  const socket = io();
+  <script>
+    // Like button handler
+    document.querySelectorAll('.btn-like').forEach(button => {
+      button.addEventListener('click', async () => {
+        const postCard = button.closest('.post-card');
+        const postId = postCard.dataset.postId;
 
-  // Handle Like button click
-  document.querySelectorAll('.btn-like').forEach(button => {
-    button.addEventListener('click', async () => {
-      const postCard = button.closest('.post-card');
-      const postId = postCard.dataset.postId;
+        try {
+          const res = await fetch(`/posts/like/${postId}`, { method: 'POST' });
+          const data = await res.json();
 
-      try {
-        const res = await fetch(`/posts/like/${postId}`, { method: 'POST' });
-        const data = await res.json();
+          if (data.liked) {
+            button.classList.add('bi-heart-fill', 'text-danger');
+            button.classList.remove('bi-heart');
+          } else {
+            button.classList.remove('bi-heart-fill', 'text-danger');
+            button.classList.add('bi-heart');
+          }
 
-        if (data.liked) {
-          button.classList.add('bi-heart-fill', 'text-danger');
-          button.classList.remove('bi-heart');
-        } else {
-          button.classList.remove('bi-heart-fill', 'text-danger');
-          button.classList.add('bi-heart');
+          // Update like count
+          postCard.querySelector('.likes-count').textContent = data.likesCount + ' Likes';
+        } catch (error) {
+          alert('Log in to comment');
         }
-
-        // Update like count
-        postCard.querySelector('.likes-count').textContent = data.likesCount + ' Likes';
-      } catch (error) {
-        alert('Log in to comment');
-      }
+      });
     });
-  });
 
-  // Add comment handler
-  document.querySelectorAll('.add-comment').forEach(form => {
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const postId = form.dataset.postId;
+   // Add comment handler
+document.querySelectorAll('.add-comment').forEach(form => {
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const postId = form.dataset.postId;
 
-      const textInput = form.querySelector('input[name="text"]') || form.querySelector('textarea[name="text"]');
-      const text = textInput ? textInput.value.trim() : '';
+    // تعيين القيم من الفورم
+    const textInput = form.querySelector('input[name="text"]') || form.querySelector('textarea[name="text"]');
+    const text = textInput ? textInput.value.trim() : '';
 
-      const fileInput = form.querySelector('input[type="file"][name="media"]');
-      const file = fileInput ? fileInput.files[0] : null;
+    const fileInput = form.querySelector('input[type="file"][name="media"]');
+    const file = fileInput ? fileInput.files[0] : null;
 
-      if (!text && !file) {
-        alert('Please add text or media to comment.');
+    if (!text && !file) {
+      alert('Please add text or media to comment.');
+      return;
+    }
+
+    // بناء جسم الطلب حسب وجود ملف أو لا (multipart/form-data)
+    let formData;
+    let fetchOptions;
+
+    if (file) {
+      formData = new FormData();
+      if (text) formData.append('text', text);
+      formData.append('media', file);
+
+      fetchOptions = {
+        method: 'POST',
+        body: formData
+      };
+    } else {
+      fetchOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      };
+    }
+
+    try {
+      const res = await fetch(`/posts/comment/${postId}`, fetchOptions);
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Error while adding comment');
         return;
       }
 
-      let formData;
-      let fetchOptions;
+      const comments = await res.json();
 
-      if (file) {
-        formData = new FormData();
-        if (text) formData.append('text', text);
-        formData.append('media', file);
+      // تحديث قسم التعليقات (عرض آخر 3 فقط)
+      const commentsSection = form.parentElement.querySelector('.comments-section');
+      commentsSection.innerHTML = '';
 
-        fetchOptions = {
-          method: 'POST',
-          body: formData
-        };
-      } else {
-        fetchOptions = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        };
+      comments.slice(-3).forEach(comment => {
+        let commentHTML = `<p><strong>${comment.user ? comment.user.username : 'مستخدم غير معروف'}:</strong></p>`;
+        if (comment.text) commentHTML += `<p>${comment.text}</p>`;
+        if (comment.image) commentHTML += `<img src="${comment.image}" alt="Comment image" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;" />`;
+        if (comment.video) commentHTML += `
+          <video controls style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
+            <source src="${comment.video}" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>`;
+        commentsSection.innerHTML += commentHTML;
+      });
+
+      if (comments.length > 3) {
+        commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
       }
 
-      try {
-        const res = await fetch(`/posts/comment/${postId}`, fetchOptions);
-
-        if (!res.ok) {
-          const err = await res.json();
-          alert(err.error || 'Error while adding comment');
-          return;
-        }
-
-        const comments = await res.json();
-
-        // Update comments section
-        const commentsSection = form.parentElement.querySelector('.comments-section');
-        commentsSection.innerHTML = '';
-
-        comments.slice(-3).forEach(comment => {
-          let commentHTML = `<p><strong>${comment.user ? comment.user.username : 'مستخدم غير معروف'}:</strong></p>`;
-          if (comment.text) commentHTML += `<p>${comment.text}</p>`;
-          if (comment.image) commentHTML += `<img src="${comment.image}" alt="Comment image" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;" />`;
-          if (comment.video) commentHTML += `
-            <video controls style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
-              <source src="${comment.video}" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>`;
-          commentsSection.innerHTML += commentHTML;
-        });
-
-        if (comments.length > 3) {
-          commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
-        }
-
-        // Clear form fields
-        if (textInput) textInput.value = '';
-        if (fileInput) fileInput.value = '';
-      } catch (error) {
-        alert('Log in to comment');
-        console.error(error);
-      }
-    });
+      // إعادة تعيين الحقول
+      if (textInput) textInput.value = '';
+      if (fileInput) fileInput.value = '';
+    } catch (error) {
+      alert('Log in to comment');
+      console.error(error);
+    }
   });
+});
 
-  // Bookmark handler
-  document.querySelectorAll('.btn-bookmark').forEach(button => {
-    button.addEventListener('click', async () => {
-      const postId = button.dataset.postId;
 
-      try {
-        const res = await fetch(`/posts/bookmark/${postId}`, { method: 'POST' });
+    // Example for saving post (bookmark)
+    document.querySelectorAll('.btn-bookmark').forEach(button => {
+      button.addEventListener('click', async () => {
+        const postId = button.dataset.postId;
 
-        const data = await res.json();
+        try {
+          const res = await fetch(`/posts/bookmark/${postId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-        if (data.bookmarked) {
-          button.classList.remove('bi-bookmark');
-          button.classList.add('bi-bookmark-fill', 'text-primary');
-        } else {
-          button.classList.remove('bi-bookmark-fill', 'text-primary');
-          button.classList.add('bi-bookmark');
+          const data = await res.json();
+
+          if (data.bookmarked) {
+            button.classList.remove('bi-bookmark');
+            button.classList.add('bi-bookmark-fill', 'text-primary');
+          } else {
+            button.classList.remove('bi-bookmark-fill', 'text-primary');
+            button.classList.add('bi-bookmark');
+          }
+        } catch (err) {
+          console.error('Bookmark error:', err);
+          alert('Log in to comment');
         }
-      } catch (err) {
-        console.error('Bookmark error:', err);
-        alert('Log in to bookmark');
-      }
-    });
-  });
-
-  // Show more comments handler
-  document.querySelectorAll('.show-more-comments').forEach(button => {
-    button.addEventListener('click', async function() {
-      const postId = button.getAttribute('data-post-id');
-
-      button.textContent = 'Show less comments';
-      button.classList.add('show-less-comments');
-      button.classList.remove('show-more-comments');
-
-      try {
-        const res = await fetch(`/posts/comments/${postId}?page=2`);
-        const comments = await res.json();
-
-        const commentsSection = button.closest('.comments-section');
-
-        comments.forEach(comment => {
-          const commentElement = document.createElement('p');
-          commentElement.innerHTML = `<strong>${comment.user.username}:</strong> ${comment.text}`;
-          commentsSection.insertBefore(commentElement, button);
-        });
-      } catch (error) {
-        console.error('Error fetching comments:', error);
-      }
-    });
-  });
-
-  // Show less comments handler
-  document.querySelectorAll('.show-less-comments').forEach(button => {
-    button.addEventListener('click', function() {
-      const postId = button.getAttribute('data-post-id');
-
-      const commentsSection = button.closest('.comments-section');
-      const allComments = commentsSection.querySelectorAll('p');
-      const visibleComments = Array.from(allComments).slice(0, 3);
-
-      for (let i = 3; i < allComments.length; i++) {
-        allComments[i].style.display = 'none';
-      }
-
-      button.textContent = 'Show more comments';
-      button.classList.add('show-more-comments');
-      button.classList.remove('show-less-comments');
-
-      visibleComments.forEach(comment => {
-        comment.style.display = 'block';
       });
     });
-  });
-</script>
+    
+    // Handling reactions
+    document.querySelectorAll('.toggle-reactions').forEach(btn => {
+      btn.addEventListener('mouseover', () => btn.nextElementSibling.style.display = 'flex');
+      btn.nextElementSibling.addEventListener('mouseleave', e => e.currentTarget.style.display = 'none');
+    });
+    document.querySelectorAll('.reaction-icon').forEach(icon => {
+      icon.addEventListener('click', async () => {
+        const postId = icon.closest('.post-card').dataset.postId;
+        const type = icon.dataset.type;
+        await fetch(`/posts/react/${postId}`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ type })
+        });
+        icon.closest('.reactions-popup').style.display = 'none';
+      });
+    });
 
+    // Handling swipe actions
+    document.querySelectorAll('.post-card').forEach(card => {
+      let startX;
+      card.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+      card.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (dx > 100) {
+          card.querySelector('.btn-bookmark').click();
+        } else if (dx < -100) {
+          card.querySelector('.btn-like').click();
+        }
+      });
+    });
+
+
+
+
+    // التفاعل مع عرض المزيد من التعليقات
+document.querySelectorAll('.show-more-comments').forEach(button => {
+  button.addEventListener('click', async function() {
+    const postId = button.getAttribute('data-post-id');
+
+    // إخفاء "عرض المزيد" وعرض النص "عرض أقل"
+    button.textContent = 'Show less comments';
+    button.classList.add('show-less-comments');
+    button.classList.remove('show-more-comments');
+
+    try {
+      // جلب التعليقات المتبقية من الخادم باستخدام AJAX
+      const res = await fetch(`/posts/comments/${postId}?page=2`);
+      const comments = await res.json();
+
+      const commentsSection = button.closest('.comments-section');
+
+      // إضافة التعليقات الجديدة إلى الصفحة
+      comments.forEach(comment => {
+        const commentElement = document.createElement('p');
+        commentElement.innerHTML = `<strong>${comment.user.username}:</strong> ${comment.text}`;
+        commentsSection.insertBefore(commentElement, button);
+      });
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  });
+});
+
+// التفاعل مع عرض أقل من التعليقات
+document.querySelectorAll('.show-less-comments').forEach(button => {
+  button.addEventListener('click', function() {
+    const postId = button.getAttribute('data-post-id');
+
+    // إخفاء التعليقات الجديدة وإظهار النص "عرض المزيد"
+    const commentsSection = button.closest('.comments-section');
+    const allComments = commentsSection.querySelectorAll('p');
+    const visibleComments = Array.from(allComments).slice(0, 3);
+
+    // إخفاء التعليقات المتبقية
+    for (let i = 3; i < allComments.length; i++) {
+      allComments[i].style.display = 'none';
+    }
+
+    button.textContent = 'Show more comments';
+    button.classList.add('show-more-comments');
+    button.classList.remove('show-less-comments');
+
+    // عرض التعليقات الأصلية (بداية من 3 فقط)
+    visibleComments.forEach(comment => {
+      comment.style.display = 'block';
+    });
+  });
+});
+
+  </script>
   <style>
     footer {
   background-color: #343a40;
