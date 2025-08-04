@@ -73,13 +73,24 @@ router.post('/add', auth, upload.fields([
     });
     await post.save();
 
+    // إرسال إشعار لصاحب المنشور (في حال كان هناك مستخدم آخر قد أضاف المنشور)
+    const user = await User.findById(req.user._id);
+    const notif = new Notification({
+      recipient: req.user._id,
+      user: req.user._id,
+      type: 'post',
+      post: post._id,
+      isRead: false,
+      message: `${user.username} added a new post`
+    });
+    await notif.save();
+
     res.redirect('/users/' + req.user._id);
   } catch (err) {
     console.error('🔥 Error saving post:', util.inspect(err, { depth: null }));
     res.status(500).send('Failed to create post.');
   }
 });
-
 
 
 router.post('/like/:id', auth, async (req, res) => {
@@ -90,14 +101,17 @@ router.post('/like/:id', auth, async (req, res) => {
     const userId = req.user._id.toString();
     const liked = post.likes.includes(userId);
 
-    const targetUser = await User.findById(post.user);
-    const currentUser = req.user;
+    const targetUser = await User.findById(post.user); // صاحب المنشور
+    const currentUser = req.user; // المستخدم الذي ضغط على لايك
+
+    const io = req.app.get('io');
 
     if (liked) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
     } else {
       post.likes.push(userId);
 
+      // إرسال إشعار لصاحب المنشور إذا لم يكن هو نفسه من ضغط على لايك
       if (!targetUser._id.equals(currentUser._id)) {
         const notif = new Notification({
           recipient: targetUser._id,
@@ -105,27 +119,35 @@ router.post('/like/:id', auth, async (req, res) => {
           type: 'like',
           post: post._id,
           isRead: false,
-          message: `${currentUser.username}  Like your post`
+          message: `${currentUser.username} liked your post`
         });
         await notif.save();
 
-        const io = req.app.get('io');
+        // إشعار حقيقي (Socket.io) لصاحب المنشور
         if (io) {
           io.to(targetUser._id.toString()).emit('newNotification', {
             type: 'like',
-            message: `${currentUser.username}  Like your post`
+            message: `${currentUser.username} liked your post`
+          });
+
+          // 💡 هنا نرسل رسالة شكر للشخص الذي ضغط على Like
+          io.to(currentUser._id.toString()).emit('thankYouMessage', {
+            from: targetUser.username,
+            message: `${targetUser.username} says: Thank you for liking my post! 🥰`
           });
         }
       }
     }
 
     await post.save();
+
     res.json({ likesCount: post.likes.length, liked: !liked });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error updating likes' });
   }
 });
+
 router.post('/comment/:id', auth, async (req, res) => {
   try {
     const { text } = req.body;
@@ -175,27 +197,6 @@ router.post('/comment/:id', auth, async (req, res) => {
 });
 
 
-router.post('/bookmark/:id', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    const postId = req.params.id;
-
-    const index = user.bookmarks.findIndex(id => id.toString() === postId);
-
-    if (index === -1) {
-      user.bookmarks.push(postId);
-      await user.save();
-      return res.json({ bookmarked: true });
-    } else {
-      user.bookmarks.splice(index, 1);
-      await user.save();
-      return res.json({ bookmarked: false });
-    }
-  } catch (err) {
-    console.error('Error bookmarking post:', err);
-    res.status(500).json({ error: 'Failed to update favorites' });
-  }
-});
 
 router.get('/statistics/:id', async (req, res) => {
   try {
@@ -250,21 +251,80 @@ router.get('/saved', auth, async (req, res) => {
 
 
 router.post('/unsavePost/:postId', auth, async (req, res) => {
-  const user = await User.findById(req.user._id);
-  user.savedPosts = user.savedPosts.filter(id => id.toString() !== req.params.postId);
-  await user.save();
-  res.json({ success: true });
-});
-router.post('/savePost/:postId', auth, async (req, res) => {
-  const postId = req.params.postId;
-  const user = await User.findById(req.user._id);
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
-  if (!user.savedPosts.includes(postId)) {
-    user.savedPosts.push(postId);
+    const postId = req.params.postId;
+    const originalLength = user.savedPosts.length;
+
+    // التأكد من أن المنشور موجود في المحفوظات
+    user.savedPosts = user.savedPosts.filter(id => id.toString() !== postId);
+
+    if (user.savedPosts.length === originalLength) {
+      return res.status(400).json({ success: false, message: 'Post was not saved' });
+    }
+
+    // التأكد من وجود المنشور
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // إنشاء إشعار
+    const notif = new Notification({
+      recipient: post.user,
+      user: req.user._id,
+      type: 'unsave',
+      post: postId,
+      isRead: false,
+      message: `${req.user.username} unsaved your post`
+    });
+
+    await notif.save();
+
+    // حفظ التغييرات في المستخدم
     await user.save();
-    return res.json({ success: true, message: 'Saved' });
-  } else {
-    return res.status(400).json({ message: 'Already saved' });
+
+    return res.status(200).json({ success: true, message: 'Post unsaved' });
+  } catch (error) {
+    console.error('Error unsaving post:', error);
+  }
+});
+
+router.post('/savePost/:postId', auth, async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.savedPosts.includes(postId)) {
+      user.savedPosts.push(postId);
+      await user.save();
+
+      // إرسال إشعار للمستخدم عند حفظ المنشور
+      const post = await Post.findById(postId);
+      const notif = new Notification({
+        recipient: post.user,
+        user: req.user._id,
+        type: 'save',
+        post: postId,
+        isRead: false,
+        message: `${req.user.username} saved your post`
+      });
+      await notif.save();
+
+      return res.status(200).json({ success: true, message: 'Saved' });
+    } else {
+      return res.status(200).json({ success: true, message: 'Already saved' });
+    }
+  } catch (error) {
+    console.error('Error saving post:', error);
   }
 });
 // GET صفحة تعديل المنشور
@@ -312,6 +372,18 @@ router.post('/edit/:id', auth, upload.fields([
 
     await post.save();
 
+    // إضافة إشعار عند تعديل المنشور
+    const user = await User.findById(req.user._id);
+    const notif = new Notification({
+      recipient: post.user,
+      user: req.user._id,
+      type: 'edit',
+      post: post._id,
+      isRead: false,
+      message: `${user.username} edited your post`
+    });
+    await notif.save();
+
     res.redirect('/posts/' + post._id);
   } catch (err) {
     console.error(err);
@@ -334,6 +406,17 @@ router.post('/delete/:id', auth, async (req, res) => {
       return res.status(403).send('Unauthorized');
     }
 
+    // إرسال إشعار للمستخدم عند حذف المنشور
+    const notif = new Notification({
+      recipient: post.user,
+      user: req.user._id,
+      type: 'alert',
+      post: postId,
+      isRead: false,
+      message: `${req.user.username} deleted your post`
+    });
+    await notif.save();
+
     await post.deleteOne();  // هنا بدل remove() نستخدم deleteOne()
 
     res.redirect('/admin/dashboard');
@@ -353,6 +436,17 @@ router.post('/share/:id', auth, async (req, res) => {
     post.shares = (post.shares || 0) + 1;
     await post.save();
 
+    // إرسال إشعار للمستخدم عند مشاركة المنشور
+    const notif = new Notification({
+      recipient: post.user,
+      user: req.user._id,
+      type: 'share',
+      post: postId,
+      isRead: false,
+      message: `${req.user.username} shared your post`
+    });
+    await notif.save();
+
     res.json({ success: true, shares: post.shares });
   } catch (err) {
     console.error(err);
@@ -360,5 +454,5 @@ router.post('/share/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
 
+module.exports = router;
