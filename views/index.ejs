@@ -321,13 +321,16 @@ Media display -->
         </form>
 
         <% if (currentUser) { %>
-          <form class="add-comment" data-post-id="<%= post._id %>">
-            <input type="text" name="comment" placeholder="Add a comment..." autocomplete="off" required />
-            <button type="submit">Post</button>
-          </form>
-        <% } else { %>
-          <p class="text-center text-muted">Log in to comment</p>
-        <% } %>
+    <form class="px-3 pb-3" id="comment-form">
+      <div class="input-group">
+        <input type="text" name="text" class="form-control" placeholder="Add a comment..." required>
+        <button class="btn btn-primary" type="submit">Post</button>
+      </div>
+    </form>
+  <% } else { %>
+    <p class="text-center text-muted pb-3">Login to comment.</p>
+  <% } %>
+
       </div>
     <% }) %>
   <% } else { %>
@@ -360,7 +363,7 @@ Media display -->
 <script>
 document.querySelectorAll('.post-card').forEach(card => {
   const shareBtn = card.querySelector('.btn-share');
-  const shareOpts = card.querySelector('.share-options');
+  const shareOpts = card.querySelecator('.share-options');
   const copyBtn = card.querySelector('.copy-link');
   const waBtn = card.querySelector('.whatsapp-share');
   const tgBtn = card.querySelector('.telegram-share');
@@ -476,85 +479,25 @@ document.querySelectorAll('.post-card').forEach(card => {
       });
     });
 
-   // Add comment handler
-document.querySelectorAll('.add-comment').forEach(form => {
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const postId = form.dataset.postId;
+  // Comment
+  const commentForm = document.getElementById('comment-form');
+  if (commentForm) {
+    commentForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const textInput = commentForm.querySelector('input[name="text"]');
+      const text = textInput.value.trim();
+      if (!text) return;
 
-    // تعيين القيم من الفورم
-    const textInput = form.querySelector('input[name="text"]') || form.querySelector('textarea[name="text"]');
-    const text = textInput ? textInput.value.trim() : '';
-
-    const fileInput = form.querySelector('input[type="file"][name="media"]');
-    const file = fileInput ? fileInput.files[0] : null;
-
-    if (!text && !file) {
-      alert('Please add text or media to comment.');
-      return;
-    }
-
-    // بناء جسم الطلب حسب وجود ملف أو لا (multipart/form-data)
-    let formData;
-    let fetchOptions;
-
-    if (file) {
-      formData = new FormData();
-      if (text) formData.append('text', text);
-      formData.append('media', file);
-
-      fetchOptions = {
-        method: 'POST',
-        body: formData
-      };
-    } else {
-      fetchOptions = {
+      const res = await fetch(`/posts/comment/<%= post._id %>`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
-      };
-    }
-
-    try {
-      const res = await fetch(`/posts/comment/${postId}`, fetchOptions);
-
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || 'Error while adding comment');
-        return;
-      }
-
-      const comments = await res.json();
-
-      // تحديث قسم التعليقات (عرض آخر 3 فقط)
-      const commentsSection = form.parentElement.querySelector('.comments-section');
-      commentsSection.innerHTML = '';
-
-      comments.slice(-3).forEach(comment => {
-        let commentHTML = `<p><strong>${comment.user ? comment.user.username : 'مستخدم غير معروف'}:</strong></p>`;
-        if (comment.text) commentHTML += `<p>${comment.text}</p>`;
-        if (comment.image) commentHTML += `<img src="${comment.image}" alt="Comment image" style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;" />`;
-        if (comment.video) commentHTML += `
-          <video controls style="max-width: 100%; border-radius: 8px; margin-bottom: 10px;">
-            <source src="${comment.video}" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>`;
-        commentsSection.innerHTML += commentHTML;
       });
 
-      if (comments.length > 3) {
-        commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
-      }
+      if (res.ok) location.reload();
+    });
+  }
 
-      // إعادة تعيين الحقول
-      if (textInput) textInput.value = '';
-      if (fileInput) fileInput.value = '';
-    } catch (error) {
-      alert('Log in to comment');
-      console.error(error);
-    }
-  });
-});
 
 
     // Example for saving post (bookmark)
@@ -697,24 +640,3 @@ footer strong {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
