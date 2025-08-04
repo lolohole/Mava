@@ -8,7 +8,7 @@ const notificationSchema = new mongoose.Schema({
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // ✅ مهم لـ populate
     data: { type: mongoose.Schema.Types.Mixed }, // أضف هذا السطر
 
-  type: { type: String, enum: ['request', 'message', 'alert','like', 'comment', 'follow', 'order'], required: true },
+  type: { type: String, enum: ['request', 'message', 'alert','like', 'comment', 'follow', 'order' , 'unsave' , 'save' ,  'edit' , 'share',   ], required: true },
   post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', default: null },
   message: { type: String, required: true },
   isRead: { type: Boolean, default: false },
