@@ -72,8 +72,9 @@
   <div class="post-footer">
     <div class="d-flex align-items-center">
       <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like"></i>
-      <i class="bi bi-chat btn-comment" title="Comment"></i>
-
+ <a href="#comment-btn" title="Comment" role="button" class="btn-comment">
+  <i class="bi bi-chat"></i>
+</a>
       <% if (currentUser) { %>
      <!-- 
         <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" title="Bookmark"></i>
@@ -109,7 +110,7 @@
     <strong><%= post.user.username %></strong> <%= post.caption %>
   </div>
 
-  <div class="px-3 pb-3">
+  <div class="px-3 pb-3" id="comment-btn">
     <% post.comments.forEach(c => { %>
       <p><strong><%= c.user.username %>:</strong> <%= c.text %></p>
     <% }) %>
@@ -192,7 +193,16 @@
         headers: { 'Content-Type': 'application/json' }
       });
 
-      if (res.ok) location.reload();
+const result = await res.json();
+if (res.ok) {
+  if (isSaved) {
+    button.classList.remove('saved');
+    button.textContent = '💾 Save';
+  } else {
+    button.classList.add('saved');
+    button.textContent = '🗑 Remove Saved';
+  }
+}
     });
   });
 
