@@ -1,3 +1,5 @@
+// routes/index.js
+
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Posts');
@@ -5,53 +7,69 @@ const User = require('../models/User');
 const auth = require('../middlewares/authMiddleware');
 const Notification = require('../models/Notification');
 
+// The static user to simulate as an example (ensure it doesn't re-create)
 const CURRENT_USER_ID = '64babc123456789000000000';
-
-// إنشاء مستخدم وهمي إذا لم يكن موجود
 User.findById(CURRENT_USER_ID).then(user => {
   if (!user) {
+    // Create a default user only if it doesn't exist
     const u = new User({ _id: CURRENT_USER_ID, username: 'Me', password: 'defaultPassword123!' });
     u.save();
   }
 });
 
-// الصفحة الرئيسية
+// Home Page: Display posts with user data (latest first)
 router.get("/", async (req, res) => {
   try {
     const posts = await Post.find({})
       .populate("user", "username avatar")
+      .populate("comments.user", "username avatar") // Populate التعليقات
       .sort({ createdAt: -1 });
 
     let currentUser = null;
     if (req.session.userId) {
-      currentUser = await User.findById(req.session.userId).select('username avatar bookmarks');
+      currentUser = await User.findById(req.session.userId).select('username avatar bookmarks savedPosts');
     }
 
     res.render("index", { posts, currentUser });
   } catch (error) {
     console.error("Error loading posts:", error);
-    res.status(500).send("An error occurred while loading posts..");
+    res.status(500).send("An error occurred while loading posts.");
   }
 });
 
-// صفحات ثابتة
-router.get('/about', (req, res) => res.render('about', { title: 'about' }));
-router.get('/apps', (req, res) => res.render('apps', { title: 'apps' }));
-router.get('/contact', (req, res) => res.render('contact', { title: 'contact' }));
-router.get('/portfolio', (req, res) => res.render('portfolio', { title: 'portfolio' }));
-router.get('/sites', (req, res) => res.render('sites', { title: 'sites' }));
+// نقطة النهاية الخاصة بتحميل المزيد من التعليقات
+router.get("/posts/:postId/comments", async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findById(postId).populate("comments.user", "username avatar");
 
-// صفحة البروفايل للمستخدم الحالي
+    // عرض تعليقات بعد 3
+    const allComments = post.comments;
+    const commentsToShow = allComments.slice(3);
+
+    res.json({ comments: commentsToShow });
+  } catch (error) {
+    console.error("Error loading comments:", error);
+    res.status(500).send("An error occurred while loading comments.");
+  }
+});
 
 
-// صفحة الإشعارات
+// Static Pages Routes (About, Apps, Contact, etc.)
+router.get('/about', (req, res) => res.render('about', { title: 'About Us' }));
+router.get('/apps', (req, res) => res.render('apps', { title: 'Apps' }));
+router.get('/contact', (req, res) => res.render('contact', { title: 'Contact Us' }));
+router.get('/portfolio', (req, res) => res.render('portfolio', { title: 'Portfolio' }));
+router.get('/sites', (req, res) => res.render('sites', { title: 'Sites' }));
+
+// Notifications Page
 router.get('/notifications', auth, async (req, res) => {
   try {
     const notifications = await Notification.find({ recipient: req.user._id })
-      .sort({ createdAt: -1 })
-      .populate('user', 'username avatar') // المرسل
-      .populate('post')
-      .limit(20);
+      .sort({ createdAt: -1 })  // Get the latest notifications first
+      .populate('user', 'username avatar') // Include the sender's info
+      .populate('post')  // Include post info where necessary
+      .limit(20);  // Limit the number of notifications to 20
 
     res.render('notifications', { notifications, currentUser: req.user });
   } catch (err) {
@@ -60,7 +78,7 @@ router.get('/notifications', auth, async (req, res) => {
   }
 });
 
-// وضع علامة مقروء على إشعار
+// Mark notification as read
 router.post('/notifications/read/:id', auth, async (req, res) => {
   try {
     await Notification.findByIdAndUpdate(req.params.id, { isRead: true });
@@ -70,19 +88,20 @@ router.post('/notifications/read/:id', auth, async (req, res) => {
   }
 });
 
-// البحث
+// Search functionality
 router.get('/search', auth, async (req, res) => {
   let query = req.query.q;
+  
   if (!query || typeof query !== 'string') return res.redirect('/');
-
+  
   query = query.trim();
   if (query.length === 0) return res.redirect('/');
 
   try {
-    // الحد الأقصى للنتائج للحد من الحمل على السيرفر
+    // Limit the number of results to prevent performance issues
     const MAX_RESULTS = 20;
 
-    // بحث نصي في الـ Users على الحقل username
+    // Search in Users and Posts by text
     const users = await User.find(
       { $text: { $search: query } },
       { score: { $meta: "textScore" }, username: 1, avatar: 1 }
@@ -90,10 +109,9 @@ router.get('/search', auth, async (req, res) => {
     .sort({ score: { $meta: "textScore" } })
     .limit(MAX_RESULTS);
 
-    // بحث نصي في الـ Posts على الحقل caption
     const posts = await Post.find(
       { $text: { $search: query } },
-      { score: { $meta: "textScore" }, caption: 1, user: 1, createdAt:1 }
+      { score: { $meta: "textScore" }, caption: 1, user: 1, createdAt: 1 }
     )
     .sort({ score: { $meta: "textScore" } })
     .populate('user', 'username avatar')
@@ -111,7 +129,8 @@ router.get('/search', auth, async (req, res) => {
     res.status(500).send('An error occurred while searching.');
   }
 });
-// عرض منشور محدد
+
+// View a specific post
 router.get('/post/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate('user');
@@ -123,7 +142,7 @@ router.get('/post/:id', async (req, res) => {
   }
 });
 
-// لايك منشور
+// Like a post
 router.post('/post/:id/like', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -133,6 +152,7 @@ router.post('/post/:id/like', auth, async (req, res) => {
       post.likes.push(req.user._id);
       await post.save();
 
+      // If the user is not the post owner, send a notification
       if (post.user.toString() !== req.user._id.toString()) {
         await Notification.create({
           recipient: post.user,
@@ -142,30 +162,31 @@ router.post('/post/:id/like', auth, async (req, res) => {
           isRead: false,
           createdAt: new Date()
         });
+        
         const io = req.app.get('io');
-if (io) {
-  io.to(recipientId.toString()).emit('newNotification', {
-    type: 'comment',
-    message: `${req.user.username} Comment on your post`,
-  });
-}
-
+        if (io) {
+          io.to(post.user.toString()).emit('newNotification', {
+            type: 'like',
+            message: `${req.user.username} liked your post!`,
+          });
+        }
       }
     }
 
     res.redirect('/post/' + post._id);
   } catch (err) {
     console.error('Like error:', err);
-    res.status(500).send('An error occurred while liking.');
+    res.status(500).send('An error occurred while liking the post.');
   }
 });
 
-// تعليق على منشور
+// Comment on a post
 router.post('/post/:id/comment', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate('user');
     if (!post) return res.status(404).send('The post does not exist');
 
+    // Add the new comment to the post
     post.comments.push({
       user: req.user._id,
       text: req.body.comment
@@ -173,35 +194,25 @@ router.post('/post/:id/comment', auth, async (req, res) => {
 
     await post.save();
 
-    console.log('🔎 post.user:', post.user);
-    console.log('🔎 req.user:', req.user);
-    console.log('🔎 req.user._id:', req.user?._id);
+    const recipientId = post.user._id;
+    if (recipientId && req.user._id && recipientId.toString() !== req.user._id.toString()) {
+      await Notification.create({
+        recipient: recipientId,
+        user: req.user._id,
+        type: 'comment',
+        post: post._id,
+        isRead: false,
+        createdAt: new Date()
+      });
 
-    console.log('🔎 recipientId:', recipientId);
-
-    const recipientId = post.user && post.user._id ? post.user._id : post.user;
-
-if (recipientId && req.user && req.user._id && recipientId.toString() !== req.user._id.toString()) {
-  await Notification.create({
-    recipient: recipientId,
-    user: req.user._id,
-    type: 'comment',
-    post: post._id,
-    isRead: false,
-    createdAt: new Date()
-  });
-  const io = req.app.get('io');
-if (io) {
-  io.to(recipientId.toString()).emit('newNotification', {
-    type: 'comment',
-    message: `${req.user.username} Comment on your post`,
-  });
-}
-
-} else {
-  console.warn('Skipping notification creation due to missing recipient or user.');
-}
-
+      const io = req.app.get('io');
+      if (io) {
+        io.to(recipientId.toString()).emit('newNotification', {
+          type: 'comment',
+          message: `${req.user.username} commented on your post!`,
+        });
+      }
+    }
 
     res.redirect('/post/' + post._id);
   } catch (err) {
@@ -209,6 +220,5 @@ if (io) {
     res.status(500).send('An error occurred while adding the comment.');
   }
 });
-
 
 module.exports = router;
