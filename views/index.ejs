@@ -625,6 +625,7 @@ document.querySelectorAll('.unsave-post-form').forEach(form => {
       if (response.ok) {
         // احذف الكارد من الصفحة (مثلاً بوست محفوظ من قبل)
         form.closest('.col-md-6').remove();
+button.textContent = ' 💾 Save';
       } else {
         alert(result.message || 'An error occurred while unsaving the post.');
       }
@@ -733,6 +734,7 @@ document.querySelectorAll('.unsave-post-form').forEach(form => {
 
 </body>
 </html>
+
 
 
 
