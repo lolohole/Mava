@@ -317,13 +317,17 @@ Media display -->
 </div>
 
 <!-- الفورم الخاصة بالتعليق -->
-<form class="save-post-form" data-post-id="<%= post._id %>">
-  <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
-    <button type="submit" class="save-btn saved">🗑 Remove save</button>
-  <% } else { %>
+<% if (currentUser && !currentUser.savedPosts?.includes(post._id.toString())) { %>
+  <form class="save-post-form" data-post-id="<%= post._id %>">
     <button type="submit" class="save-btn">💾 Save</button>
-  <% } %>
-</form>
+  </form>
+<% } %>
+<% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
+  <form class="unsave-post-form" data-post-id="<%= post._id %>">
+    <button type="submit" class="save-btn saved">🗑 Remove save</button>
+  </form>
+<% } %>
+
 
 <% if (currentUser) { %>
   <form class="add-comment" data-post-id="<%= post._id %>">
@@ -575,38 +579,62 @@ footer strong {
 </footer>
 
 <script>
-  // زر الحفظ / إزالة الحفظ
-  document.querySelectorAll('.save-post-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const postId = form.getAttribute('data-post-id');
-      const button = form.querySelector('button');
-      const isSaved = button.classList.contains('saved');
+ document.querySelectorAll('.save-post-form').forEach(form => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const postId = form.getAttribute('data-post-id');
+    const button = form.querySelector('button');
 
-      try {
-        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          if (isSaved) {
-            button.classList.remove('saved');
-            button.textContent = '💾 Save';
-          } else {
-            button.classList.add('saved');
-            button.textContent = '🗑 Remove save';
-          }
-        } else {
-          alert(result.message || 'An error occurred while saving.');
+    try {
+      const response = await fetch(`/posts/savePost/${postId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      } catch (err) {
-        console.error(err);
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        button.classList.add('saved');
+        button.textContent = '🗑 Remove save';
+        // يمكنك إضافة منبه أو تغيير شكل الزر حسب الحاجة
+      } else {
+        alert(result.message || 'An error occurred while saving the post.');
       }
-    });
+    } catch (err) {
+      console.error(err);
+      alert('Could not save the post. Please try again later.');
+    }
   });
+});
+document.querySelectorAll('.unsave-post-form').forEach(form => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const postId = form.getAttribute('data-post-id');
+    const button = form.querySelector('button');
+
+    try {
+      const response = await fetch(`/posts/unsavePost/${postId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        // احذف الكارد من الصفحة (مثلاً بوست محفوظ من قبل)
+        form.closest('.col-md-6').remove();
+      } else {
+        alert(result.message || 'An error occurred while unsaving the post.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not unsave the post. Please try again later.');
+    }
+  });
+});
+
   // إرسال تعليق جديد
   document.querySelectorAll('.add-comment').forEach(form => {
     form.addEventListener('submit', async e => {
@@ -706,6 +734,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
