@@ -586,7 +586,7 @@ footer strong {
       const isSaved = button.classList.contains('saved');
 
       try {
-        const response = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -602,13 +602,13 @@ footer strong {
             button.textContent = '🗑 Remove save';
           }
         } else {
+          alert(result.message || 'An error occurred while saving.');
         }
       } catch (err) {
         console.error(err);
       }
     });
   });
-
   // إرسال تعليق جديد
   document.querySelectorAll('.add-comment').forEach(form => {
     form.addEventListener('submit', async e => {
@@ -708,6 +708,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
