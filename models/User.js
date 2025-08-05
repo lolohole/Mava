@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Role = require('./Role'); // استيراد نموذج الأدوار
+//const Role = require('./Role'); // استيراد نموذج الأدوار
 
 const notificationSchema = new mongoose.Schema({
   message: { type: String, required: true },
@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
+  //rolle: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
   userCode: {
     type: String,
     unique: true,
@@ -109,3 +109,4 @@ const userSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('User', userSchema);
+
