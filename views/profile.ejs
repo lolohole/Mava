@@ -403,11 +403,11 @@
 document.addEventListener('DOMContentLoaded', function () {
   const followButton = document.getElementById('followButton');
   const followersCount = document.getElementById('followersCount');
-
+  
   if (followButton) {
     followButton.addEventListener('click', async function () {
-      const userId = this.getAttribute('data-userid');
-      const isFollowing = followButton.innerText.trim() === 'إلغاء المتابعة' || followButton.innerText.trim() === 'Unfollow';
+      const userId = this.getAttribute('data-userid');  // تأكد أن هذا الـ ID موجود
+      const isFollowing = followButton.innerText.trim() === 'Unfollow' || followButton.innerText.trim() === 'إلغاء المتابعة';
       const url = isFollowing ? `/users/unfollow/${userId}` : `/users/follow/${userId}`;
 
       try {
@@ -419,12 +419,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const data = await res.json();
         if (data.success) {
-          // تحديث نص الزر
+          // تحديث النص بناءً على المتابعة أو الإلغاء
           followButton.innerText = isFollowing ? 'Follow' : 'Unfollow';
-          // تبديل ألوان الزر
+          // تبديل الألوان للزر
           followButton.classList.toggle('btn-outline-danger');
           followButton.classList.toggle('btn-outline-primary');
-          // تحديث عدد المتابعين إذا موجود
+          
+          // تحديث عدد المتابعين إذا كان موجودًا
           if (followersCount) followersCount.innerText = data.followersCount;
         } else {
           alert('حدث خطأ أثناء التفاعل');
@@ -436,6 +437,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
 </script>
 
 
@@ -958,6 +960,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
+
 
 
 
