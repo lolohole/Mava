@@ -620,6 +620,10 @@ function startPulseWaves() {
 }
 
 
+
+
+
+
 function startTwinklingCircles() {
   const circles = Array.from({ length: 100 }, () => ({
     x: Math.random() * canvas.width,
@@ -654,6 +658,183 @@ function startMovingLines() {
     length: 50 + Math.random() * 100,
     speed: 1 + Math.random() * 2,
   }));
+
+
+
+
+  function startFireflies() {
+  const fireflies = Array.from({ length: 80 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 2 + 1,
+    alpha: Math.random(),
+    delta: Math.random() * 0.02 + 0.01,
+    dx: Math.random() * 0.5 - 0.25,
+    dy: Math.random() * 0.5 - 0.25,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    fireflies.forEach(f => {
+      f.x += f.dx;
+      f.y += f.dy;
+      f.alpha += f.delta;
+      if (f.alpha >= 1 || f.alpha <= 0) f.delta *= -1;
+      if (f.x < 0 || f.x > canvas.width) f.dx *= -1;
+      if (f.y < 0 || f.y > canvas.height) f.dy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 100, ${f.alpha})`;
+      ctx.shadowColor = 'rgba(255, 255, 150, 0.8)';
+      ctx.shadowBlur = 10;
+      ctx.fill();
+    });
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+
+function startMagicSparkles() {
+  const sparkles = [];
+
+  function createSparkle() {
+    return {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 3 + 1,
+      alpha: 1,
+      fade: Math.random() * 0.02 + 0.01,
+      dx: Math.random() * 2 - 1,
+      dy: Math.random() * 2 - 1,
+      color: `hsl(${Math.random() * 360}, 100%, 70%)`
+    };
+  }
+
+  for (let i = 0; i < 150; i++) {
+    sparkles.push(createSparkle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    sparkles.forEach((s, i) => {
+      s.x += s.dx;
+      s.y += s.dy;
+      s.alpha -= s.fade;
+      if (s.alpha <= 0) sparkles[i] = createSparkle();
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${s.alpha})`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = s.color;
+      ctx.fill();
+    });
+
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+function startConstellation() {
+  const stars = Array.from({ length: 100 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 2 + 1,
+    dx: Math.random() * 1 - 0.5,
+    dy: Math.random() * 1 - 0.5,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach((s, i) => {
+      s.x += s.dx;
+      s.y += s.dy;
+
+      if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+      if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+
+      for (let j = i + 1; j < stars.length; j++) {
+        const dx = s.x - stars[j].x;
+        const dy = s.y - stars[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(stars[j].x, stars[j].y);
+          ctx.strokeStyle = `rgba(255,255,255,${1 - dist / 120})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    });
+
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+function startFloatingShapes() {
+  const shapes = Array.from({ length: 60 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 20 + 10,
+    speedY: Math.random() * -1.5 - 0.5,
+    type: Math.random() > 0.5 ? 'circle' : 'triangle',
+    color: `hsl(${Math.random() * 360}, 80%, 70%)`
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    shapes.forEach((s) => {
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      if (s.type === 'circle') {
+        ctx.arc(s.x, s.y, s.size / 2, 0, Math.PI * 2);
+      } else {
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x + s.size, s.y);
+        ctx.lineTo(s.x + s.size / 2, s.y - s.size);
+        ctx.closePath();
+      }
+      ctx.fill();
+      s.y += s.speedY;
+      if (s.y + s.size < 0) s.y = canvas.height + s.size;
+    });
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
+
+function startAuroraBackground() {
+  let t = 0;
+  function draw() {
+    t += 0.01;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, `hsl(${Math.sin(t) * 60 + 180}, 100%, 60%)`);
+    gradient.addColorStop(1, `hsl(${Math.cos(t) * 60 + 240}, 100%, 60%)`);
+
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = 0.1;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1;
+
+    animationFrameId = requestAnimationFrame(draw);
+  }
+  draw();
+}
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -724,6 +905,22 @@ function startMovingLines() {
     case 'movingLines':
       startMovingLines();
       break;
+          case 'fireflies':
+      startFireflies();
+      break;
+    case 'magicSparkles':
+      startMagicSparkles();
+      break;
+    case 'constellation':
+      startConstellation();
+      break;
+    case 'floatingShapes':
+      startFloatingShapes();
+      break;
+    case 'aurora':
+      startAuroraBackground();
+      break;
+
     default:
       startParticlesBackground();
   }
@@ -741,8 +938,14 @@ function startMovingLines() {
   'animatedGrid',
   'pulseWaves',
   'twinklingCircles',
-  'movingLines'
+  'movingLines',
+  'fireflies',
+  'magicSparkles',
+  'constellation',
+  'floatingShapes',
+  'aurora'
 ];
+
 
   // اختيار عشوائي
   function randomAnimation() {
@@ -761,6 +964,8 @@ function startMovingLines() {
 
 </script>
 
+
 </body>
 </html>
+
 
