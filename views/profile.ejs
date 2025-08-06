@@ -279,11 +279,16 @@
     <div class="action-buttons mt-3">
       <% if (currentUser && currentUser._id.toString() !== profileUser._id.toString()) { %>
         <!-- زر المتابعة أو إلغاء المتابعة -->
-        <form id="followForm" data-userid="<%= profileUser._id %>">
-  <button type="button" id="followButton" class="btn btn-sm <%= currentUser.following.includes(profileUser._id) ? 'btn-outline-danger' : 'btn-outline-primary' %>">
+       <form id="followForm">
+  <button 
+    type="button" 
+    id="followButton" 
+    data-userid="<%= profileUser._id %>"
+    class="btn btn-sm <%= currentUser.following.includes(profileUser._id) ? 'btn-outline-danger' : 'btn-outline-primary' %>">
     <%= currentUser.following.includes(profileUser._id) ? 'Unfollow' : 'Follow' %>
   </button>
 </form>
+
        
         <!-- أزرار التفاعل -->
         <a href="/chat/<%= profileUser._id %>" class="btn btn-sm btn-secondary">💬 Chat</a>
@@ -960,6 +965,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
+
 
 
 
