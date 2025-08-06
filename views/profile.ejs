@@ -353,7 +353,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  
+    <!-- عرض المخطط فقط لصاحب الحساب
   <script>
   document.addEventListener('DOMContentLoaded', function () {
     const followForm = document.getElementById('followForm');
@@ -397,6 +397,48 @@
     }
   });
 </script>
+-->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const followButton = document.getElementById('followButton');
+  const followersCount = document.getElementById('followersCount');
+
+  if (followButton) {
+    followButton.addEventListener('click', async function () {
+      const userId = this.getAttribute('data-userid');
+      const isFollowing = followButton.innerText.trim() === 'إلغاء المتابعة' || followButton.innerText.trim() === 'Unfollow';
+      const url = isFollowing ? `/users/unfollow/${userId}` : `/users/follow/${userId}`;
+
+      try {
+        const res = await fetch(url, { method: 'POST' });
+        if (!res.ok) {
+          const errText = await res.text();
+          return alert('خطأ: ' + errText);
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          // تحديث نص الزر
+          followButton.innerText = isFollowing ? 'Follow' : 'Unfollow';
+          // تبديل ألوان الزر
+          followButton.classList.toggle('btn-outline-danger');
+          followButton.classList.toggle('btn-outline-primary');
+          // تحديث عدد المتابعين إذا موجود
+          if (followersCount) followersCount.innerText = data.followersCount;
+        } else {
+          alert('حدث خطأ أثناء التفاعل');
+        }
+      } catch (err) {
+        console.error('Follow/Unfollow error:', err);
+        alert('حدث خطأ أثناء الإرسال');
+      }
+    });
+  }
+});
+</script>
+
+
   <script>
     const ctx = document.getElementById('statsChart').getContext('2d');
     const statsChart = new Chart(ctx, {
@@ -916,4 +958,5 @@
 
 </body>
 </html>
+
 
