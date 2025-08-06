@@ -279,15 +279,62 @@
     <div class="action-buttons mt-3">
       <% if (currentUser && currentUser._id.toString() !== profileUser._id.toString()) { %>
         <!-- زر المتابعة أو إلغاء المتابعة -->
-       <form id="followForm">
-  <button 
-    type="button" 
-    id="followButton" 
-    data-userid="<%= profileUser._id %>"
-    class="btn btn-sm <%= currentUser.following.includes(profileUser._id) ? 'btn-outline-danger' : 'btn-outline-primary' %>">
-    <%= currentUser.following.includes(profileUser._id) ? 'Unfollow' : 'Follow' %>
-  </button>
-</form>
+      <button 
+  type="button" 
+  id="followButton" 
+  data-userid="<%= profileUser._id %>"
+  class="btn btn-sm <%= currentUser.following.includes(profileUser._id) ? 'btn-outline-danger' : 'btn-outline-primary' %>">
+  <%= currentUser.following.includes(profileUser._id) ? 'Unfollow' : 'Follow' %>
+</button>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const followButton = document.getElementById('followButton');
+  const followersCount = document.getElementById('followersCount');
+
+  if (followButton) {
+    followButton.addEventListener('click', async function () {
+      const userId = this.getAttribute('data-userid');
+      const isFollowing = followButton.innerText.trim().toLowerCase() === 'unfollow';
+      const url = isFollowing ? `/users/unfollow/${userId}` : `/users/follow/${userId}`;
+
+      console.log('Sending POST to:', url);
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error('خطأ من السيرفر:', errText);
+          return alert('خطأ: ' + errText);
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+          // غيّر نص الزر
+          followButton.innerText = isFollowing ? 'Follow' : 'Unfollow';
+          // غيّر لون الزر
+          followButton.classList.toggle('btn-outline-danger');
+          followButton.classList.toggle('btn-outline-primary');
+          // عدّل عدد المتابعين
+          if (followersCount) followersCount.innerText = data.followersCount;
+        } else {
+          alert('حدث خطأ أثناء التفاعل');
+        }
+      } catch (err) {
+        console.error('خطأ في الاتصال:', err);
+        alert('حدث خطأ أثناء الإرسال');
+      }
+    });
+  }
+});
+</script>
 
        
         <!-- أزرار التفاعل -->
@@ -402,7 +449,7 @@
     }
   });
 </script>
--->
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -444,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 </script>
-
+-->
 
   <script>
     const ctx = document.getElementById('statsChart').getContext('2d');
@@ -965,6 +1012,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
+
 
 
 
