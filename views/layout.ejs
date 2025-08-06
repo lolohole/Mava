@@ -10,6 +10,9 @@
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+   <link rel="icon" type="image/png" href="/images/favicon.png">
+
+
   <!-- Socket.IO -->
   <script src="/socket.io/socket.io.js"></script>
     <link rel="manifest" href="/manifest.json">
@@ -190,7 +193,10 @@ canvas#bgCanvas {
   <!-- 🔝 Fixed Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="/">📸 Mava</a>
+<a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/">
+  <img src="/images/logo.png" alt="Mava Logo" width="30" height="30">
+  Mava
+</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -757,3 +763,4 @@ function startMovingLines() {
 
 </body>
 </html>
+
