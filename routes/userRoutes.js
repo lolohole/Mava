@@ -190,7 +190,7 @@ showEmail: req.body.showEmail === 'on' ,
 });
 
 /// ✅ 5. متابعة / إلغاء متابعة
-router.post('/follow/:id', auth, async (req, res) => {
+router.post('/follow/:id', async (req, res) => {
   try {
     const targetUser = await User.findById(req.params.id);
     const currentUser = await User.findById(req.user._id);
@@ -233,7 +233,7 @@ if (!currentUser.role) currentUser.role = 'user';
   }
 });
 
-router.post('/unfollow/:id', auth, async (req, res) => {
+router.post('/unfollow/:id', async (req, res) => {
   try {
     const targetUser = await User.findById(req.params.id);
     const currentUser = await User.findById(req.user._id);
@@ -295,3 +295,4 @@ router.post('/profile/delete', auth, async (req, res) => {
 
 
 module.exports = router;
+
