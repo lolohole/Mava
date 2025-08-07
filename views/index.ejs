@@ -34,178 +34,186 @@
 <meta name="twitter:description" content="Description of your page">
 <meta name="twitter:image" content="URL of your image">
 
-  <style>
-    body {
-      background-color: #fafafa;
-      font-family: 'Arial', sans-serif;
-      padding-bottom: 70px;
-    }
+  
+<style>
+/* General Styles */
+body {
+  background-color: #fafafa;
+  font-family: 'Arial', sans-serif;
+  padding-bottom: 70px;
+}
 
-    .navbar {
-      background-color: white;
-      border-bottom: 1px solid #ddd;
-    }
+/* Navbar */
+.navbar {
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+}
+.navbar-brand {
+  font-weight: bold;
+}
 
-    .navbar-brand {
-      font-weight: bold;
-    }
+/* Post Card */
+.post-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin: 20px auto;
+  max-width: 600px;
+  overflow: hidden;
+}
 
-    .post-card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+/* Post Image */
+.post-card img.post-image {
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
 
-    .post-card img.post-image {
-      width: 100%;
-      height: auto;
-      border-bottom: 1px solid #eee;
-    }
+/* Post Header */
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.post-header img.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
 
-    .post-header {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-    }
+/* Post Caption */
+.post-caption {
+  padding: 10px;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
 
-    .post-header img {
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      object-fit: cover;
-      margin-left: 10px;
-    }
+/* Post Actions */
+.post-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 24px;
+  user-select: none;
+  margin-top: 8px;
+}
+.post-actions i {
+  cursor: pointer;
+  margin: 0 8px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+.post-actions i:hover {
+  color: #0d6efd;
+}
+.post-actions i:active {
+  transform: scale(1.3);
+}
 
-    .post-caption {
-      padding: 10px;
-      font-size: 14px;
-      white-space: pre-wrap;
-    }
+/* Likes Count */
+.likes-count {
+  padding: 0 10px 10px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: default;
+  margin: 8px 0;
+}
 
-    .post-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 10px;
-      font-size: 24px;
-      user-select: none;
-    }
+/* Comments Section */
+.comments-section {
+  padding: 0 10px 10px;
+  font-size: 13px;
+  color: #555;
+  max-height: 100px;
+  overflow-y: auto;
+}
+.comments-section p {
+  margin-bottom: 4px;
+}
 
-    .post-actions .left-icons i,
-    .post-actions .right-icons i {
-      cursor: pointer;
-      margin: 0 8px;
-      transition: color 0.3s ease;
-    }
+/* Add Comment */
+.add-comment {
+  border-top: 1px solid #eee;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+}
+.add-comment input {
+  border: none;
+  flex-grow: 1;
+  padding: 8px;
+  font-size: 14px;
+  outline: none;
+}
+.add-comment button {
+  border: none;
+  background: transparent;
+  color: #0d6efd;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 10px;
+}
 
-    .post-actions .left-icons i:hover {
-      color: #0d6efd;
-    }
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 1000;
+}
+.bottom-nav a {
+  color: #333;
+  text-decoration: none;
+  text-align: center;
+  font-size: 14px;
+}
+.bottom-nav a:hover {
+  color: #0d6efd;
+}
 
-    .likes-count {
-      padding: 0 10px 10px;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: default;
-    }
-
-    .comments-section {
-      padding: 0 10px 10px;
-      font-size: 13px;
-      color: #555;
-      max-height: 100px;
-      overflow-y: auto;
-    }
-
-    .comments-section p {
-      margin-bottom: 4px;
-    }
-
-    .add-comment {
-      border-top: 1px solid #eee;
-      padding: 5px 10px;
-      display: flex;
-      align-items: center;
-    }
-
-    .add-comment input {
-      border: none;
-      flex-grow: 1;
-      padding: 8px;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .add-comment button {
-      border: none;
-      background: transparent;
-      color: #0d6efd;
-      font-weight: bold;
-      cursor: pointer;
-      padding: 0 10px;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: white;
-      border-top: 1px solid #ddd;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      z-index: 1000;
-    }
-
-    .bottom-nav a {
-      color: #333;
-      text-decoration: none;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    .bottom-nav a:hover {
-      color: #0d6efd;
-    }
-
-    .btn-like, .btn-bookmark, .reaction-icon {
-      transition: transform 0.2s ease;
-    }
-
-    .btn-like:active, .btn-bookmark:active, .reaction-icon:active {
-      transform: scale(1.3);
-    }
-
-
-
-
-
-
+/* Status Badges */
 .status-badge {
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 12px;
-  }
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+.online-badge {
+  background-color: #28a745;
+}
+.offline-badge {
+  background-color: #6c757d;
+}
 
-  .online-badge {
-    background-color: #28a745;
-  }
-
-  .offline-badge {
-    background-color: #6c757d;
-  }
-
-  .profile-header {
-    padding-top: 20px;
-    position: relative;
-  }
-
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: #28a745;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s, visibility 0.4s;
+  z-index: 10000;
+}
+.toast-notification.show {
+  opacity: 1;
+  visibility: visible;
+}
 
 </style>
 </head>
@@ -317,17 +325,13 @@ Media display -->
 </div>
 
 <!-- الفورم الخاصة بالتعليق -->
-<% if (currentUser && !currentUser.savedPosts?.includes(post._id.toString())) { %>
-  <form class="save-post-form" data-post-id="<%= post._id %>">
-    <button type="submit" class="save-btn">💾 Save</button>
-  </form>
-<% } %>
-<% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
-  <form class="unsave-post-form" data-post-id="<%= post._id %>">
+<form class="save-post-form" data-post-id="<%= post._id %>">
+  <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
     <button type="submit" class="save-btn saved">🗑 Remove save</button>
-  </form>
-<% } %>
-
+  <% } else { %>
+    <button type="submit" class="save-btn">💾 Save</button>
+  <% } %>
+</form>
 
 <% if (currentUser) { %>
   <form class="add-comment" data-post-id="<%= post._id %>">
@@ -353,24 +357,7 @@ Media display -->
 <!-- Toast for copy-link -->
 <div id="copy-toast" class="toast-notification">✅ Link copied!</div>
 
-<style>
-.avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 8px; }
-.post-card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 24px; background: #fff; }
-.post-header { display: flex; align-items: center; margin-bottom: 8px; }
-.post-image, .post-video { width: 100%; border-radius: 5px; }
-.post-actions { margin-top: 8px; }
-.left-icons i { font-size: 1.4rem; margin-right: 8px; cursor: pointer; }
-.likes-count { font-weight: bold; margin: 8px 0; }
-.share-options { margin: 8px 0; }
-.toast-notification {
-  position: fixed; bottom: 30px; right: 30px;
-  background: #28a745; color: white; padding: 12px 20px;
-  border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  opacity: 0; visibility: hidden; transition: opacity 0.4s, visibility 0.4s;
-  z-index: 10000;
-}
-.toast-notification.show { opacity: 1; visibility: visible; }
-</style>
+
 
 <script>
 document.querySelectorAll('.post-card').forEach(card => {
@@ -579,64 +566,38 @@ footer strong {
 </footer>
 
 <script>
- document.querySelectorAll('.save-post-form').forEach(form => {
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const postId = form.getAttribute('data-post-id');
-    const button = form.querySelector('button');
+  // زر الحفظ / إزالة الحفظ
+  document.querySelectorAll('.save-post-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const postId = form.getAttribute('data-post-id');
+      const button = form.querySelector('button');
+      const isSaved = button.classList.contains('saved');
 
-    try {
-      const response = await fetch(`/posts/savePost/${postId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      try {
+        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (isSaved) {
+            button.classList.remove('saved');
+            button.textContent = '💾 Save';
+          } else {
+            button.classList.add('saved');
+            button.textContent = '🗑 Remove save';
+          }
+        } else {
+          alert(result.message || 'An error occurred while saving.');
         }
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        button.classList.add('saved');
-        button.textContent = '🗑 Remove save';
-        // يمكنك إضافة منبه أو تغيير شكل الزر حسب الحاجة
-      } else {
-        alert(result.message || 'An error occurred while saving the post.');
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-      alert('Could not save the post. Please try again later.');
-    }
+    });
   });
-});
-document.querySelectorAll('.unsave-post-form').forEach(form => {
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const postId = form.getAttribute('data-post-id');
-    const button = form.querySelector('button');
-
-    try {
-      const response = await fetch(`/posts/unsavePost/${postId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        // احذف الكارد من الصفحة (مثلاً بوست محفوظ من قبل)
-        form.closest('.col-md-6').remove();
-        button.classList.remove('saved');
-
-button.textContent = ' 💾 Save';
-
-      } else {
-        alert(result.message || 'An error occurred while unsaving the post.');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  });
-});
 
   // إرسال تعليق جديد
   document.querySelectorAll('.add-comment').forEach(form => {
@@ -737,16 +698,6 @@ button.textContent = ' 💾 Save';
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
 
 
