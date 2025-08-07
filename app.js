@@ -15,7 +15,8 @@ const Notification = require('./models/Notification');
 //const xssSanitizer = require('./middlewares/xssSanitizer');
 //const csurf = require('csurf');
 const helmet = require('helmet');
-
+const useragent = require('express-useragent');
+const authMiddleware = require('./middlewares/authMiddleware');
 dotenv.config();
 
 const app = express();
@@ -83,12 +84,13 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(useragent.express()); // لا تنس تثبيت express-useragent
+app.use(authMiddleware); 
 // الراوترات
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
-const authMiddleware = require('./middlewares/authMiddleware');
 const chatRoutes = require('./routes/chats');
 const settingsRoutes = require('./routes/settings');
 const productRoutes = require('./routes/products');
@@ -311,3 +313,4 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🌐 Server running on port ${PORT}`);
 });
+
