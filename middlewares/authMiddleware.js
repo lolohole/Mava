@@ -16,10 +16,10 @@ const authMiddleware = async (req, res, next) => {
     }
 
     // Fetch user with role
-    //let user = await User.findById(req.session.userId).populate('rolle');
-    //if (!user) {
-      //return res.redirect('/auth/login');
-    //}
+    let user = await User.findById(req.session.userId).populate('rolle');
+    if (!user) {
+      return res.redirect('/auth/login');
+    }
 
     // Check user status (prevent banned or inactive users from accessing)
     if (user.status === 'banned' || user.status === 'inactive') {
@@ -60,4 +60,5 @@ const authMiddleware = async (req, res, next) => {
 };
 
 module.exports = authMiddleware;
+
 
