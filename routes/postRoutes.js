@@ -20,10 +20,13 @@ cloudinary.config({
 const imageStorage = new CloudinaryStorage({
   cloudinary,
   params: { folder: 'images', allowed_formats: ['jpg','png','jpeg'] },
+
 });
+
 const videoStorage = new CloudinaryStorage({
   cloudinary,
   params: { folder: 'videos', resource_type: 'video', allowed_formats: ['mp4','mov','avi'] },
+  
 });
 
 // انشئ upload باستخدام function تختار التخزين المناسب لكل ملف
@@ -32,6 +35,7 @@ const upload = multer({
     _handleFile(req, file, cb) {
       const dest = file.mimetype.startsWith('video/') ? videoStorage : imageStorage;
       dest._handleFile(req, file, cb);
+
     },
     _removeFile(req, file, cb) {
       const dest = file.mimetype.startsWith('video/') ? videoStorage : imageStorage;
@@ -78,14 +82,14 @@ router.post('/add', auth, upload.fields([
     const notif = new Notification({
       recipient: req.user._id,
       user: req.user._id,
-      type: 'post',
+      type: 'add',
       post: post._id,
       isRead: false,
       message: `${user.username} added a new post`
     });
     await notif.save();
 
-    res.redirect('/users/' + req.user._id);
+    res.redirect('/');
   } catch (err) {
     console.error('🔥 Error saving post:', util.inspect(err, { depth: null }));
     res.status(500).send('Failed to create post.');
@@ -251,6 +255,8 @@ router.get('/saved', auth, async (req, res) => {
 
 
 router.post('/unsavePost/:postId', auth, async (req, res) => {
+    console.log('UNSAVE endpoint hit');
+
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -410,7 +416,7 @@ router.post('/delete/:id', auth, async (req, res) => {
     const notif = new Notification({
       recipient: post.user,
       user: req.user._id,
-      type: 'alert',
+      type: 'delete',
       post: postId,
       isRead: false,
       message: `${req.user.username} deleted your post`
@@ -455,5 +461,58 @@ router.post('/share/:id', auth, async (req, res) => {
 });
 
 
-module.exports = router;
 
+// حذف تعليق مدمج داخل Post
+router.post('/comments/:commentId', auth, async (req, res) => {
+  const { commentId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // إيجاد البوست الذي يحتوي على التعليق
+    const post = await Post.findOne({ 'comments._id': commentId });
+    if (!post) return res.status(404).json({ message: 'Comment not found' });
+
+    // إيجاد التعليق نفسه من داخل post.comments
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: 'Comment not found inside post' });
+
+    // التحقق من ملكية التعليق أو أن المستخدم admin
+    if (comment.user.toString() === userId.toString() ) {
+
+      return res.status(403).json({ message: 'You are not authorized to delete this comment' });
+      
+    }
+    
+
+    // حذف التعليق
+    await comment.deleteOne();
+    await post.save();
+
+    res.redirect('/admin/dashboard');
+
+  } catch (err) {
+    console.error('Error deleting comment:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/:id', auth, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const post = await Post.findById(id).populate('user').populate('comments.user'); // ← إذا تحتاج populate
+
+    if (!post) return res.status(404).send('Post not found');
+
+    //const savedPosts = req.user?.savedPosts?.map(id => id.toString()) || [];
+    
+    res.render('post', {
+      post,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Post not found');
+  }
+});
+
+module.exports = router;
