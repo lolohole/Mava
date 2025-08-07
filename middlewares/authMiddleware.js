@@ -1,26 +1,62 @@
-// middlewares/authMiddleware.js
 const User = require('../models/User');
+const generateUniqueUserCode = require('../utils/generateUserCode');
+const useragent = require('express-useragent');
 
-const auth = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
-    // التحقق من وجود جلسة مستخدم
-    if (!req.session.userId) {
+    // Allow public routes without authentication
+    const openPaths = ['/auth/login', '/auth/register'];
+    if (openPaths.includes(req.path)) {
+      return next();
+    }
+
+    // Check if session exists
+    if (!req.session || !req.session.userId) {
       return res.redirect('/auth/login');
     }
 
-    // جلب بيانات المستخدم مع حقل role مهم للتحقق من صلاحياته لاحقًا
-    const user = await User.findById(req.session.userId).select('username avatar bookmarks role');
+    // Fetch user with role
+    let user = await User.findById(req.session.userId).populate('rolle');
     if (!user) {
       return res.redirect('/auth/login');
     }
 
-    // حفظ بيانات المستخدم في req.user للاستعمال في باقي الطلب
+    // Check user status (prevent banned or inactive users from accessing)
+    if (user.status === 'banned' || user.status === 'inactive') {
+      return res.status(403).send('Access denied: Your account is inactive or banned.');
+    }
+
+    // Generate a unique userCode if it doesn't exist
+    if (!user.userCode) {
+      const newCode = await generateUniqueUserCode();
+      await User.updateOne({ _id: user._id }, { $set: { userCode: newCode } });
+      user = await User.findById(req.session.userId).populate('rolle'); // refresh user
+    }
+
+    // Check for device or IP consistency (optional security enhancement)
+    const currentIp = req.ip;
+    const currentUserAgent = req.headers['user-agent'];
+
+    if (!req.session.userAgent) {
+      req.session.userAgent = currentUserAgent;
+      req.session.userIp = currentIp;
+    } else {
+      if (
+        req.session.userAgent !== currentUserAgent ||
+        req.session.userIp !== currentIp
+      ) {
+        return res.status(403).send('Suspicious activity detected: New device or location.');
+      }
+    }
+
+    // Attach user to request object
     req.user = user;
+
     next();
   } catch (err) {
     console.error('Auth Middleware Error:', err);
-    res.redirect('/auth/login');
+    res.status(500).send(`An authentication error occurred: ${err.message}`);
   }
 };
 
-module.exports = auth;
+module.exports = authMiddleware;
