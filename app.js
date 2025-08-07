@@ -120,6 +120,8 @@ app.use('/admin', adminRoutes);
 //app.use('/dev', devRoutes);
 
 // صفحة البروفايل
+/*
+
 app.get('/profile/:id', async (req, res) => {
   try {
     const profileUser = await User.findById(req.params.id);
@@ -221,6 +223,7 @@ app.post('/comment/:postId', authMiddleware, async (req, res) => {
     res.status(500).send('Error commenting');
   }
 });
+*/
 
 // ✅✅ Socket.IO Logic
 const userSockets = new Map();
@@ -313,4 +316,5 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🌐 Server running on port ${PORT}`);
 });
+
 
