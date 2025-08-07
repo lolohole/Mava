@@ -61,6 +61,8 @@ router.get('/apps', (req, res) => res.render('apps', { title: 'Apps' }));
 router.get('/contact', (req, res) => res.render('contact', { title: 'Contact Us' }));
 router.get('/portfolio', (req, res) => res.render('portfolio', { title: 'Portfolio' }));
 router.get('/sites', (req, res) => res.render('sites', { title: 'Sites' }));
+router.get('/job-application', (req, res) => res.render('job-application', { title: 'job-application',   layout: false, }));
+
 
 // Notifications Page
 router.get('/notifications', auth, async (req, res) => {
@@ -129,13 +131,13 @@ router.get('/search', auth, async (req, res) => {
     res.status(500).send('An error occurred while searching.');
   }
 });
-
+/*
 // View a specific post
 router.get('/post/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate('user');
     if (!post) return res.status(404).send('The post does not exist');
-    res.render('post', { post });
+    res.render('post', { post , currentUser: req.user.username });
   } catch (err) {
     console.error('Error loading post:', err);
     res.status(500).send('An error occurred while loading the post.');
@@ -220,5 +222,5 @@ router.post('/post/:id/comment', auth, async (req, res) => {
     res.status(500).send('An error occurred while adding the comment.');
   }
 });
-
+*/
 module.exports = router;
