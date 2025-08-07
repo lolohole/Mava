@@ -1,62 +1,72 @@
 const express = require('express');
-const User = require('../models/User');
 const router = express.Router();
+const User = require('../models/User'); // تأكد أن لديك موديل User
+const jwt = require('jsonwebtoken');
 
-// صفحة التسجيل
-router.get('/register', (req, res) => {
-  res.render('register');
-});
-
-// تنفيذ التسجيل
+// تسجيل مستخدم جديد
 router.post('/register', async (req, res) => {
-  const { username, email, password } = req.body;
   try {
-    const newUser = new User({ username, email, password });
+    const { username, email, password } = req.body;
+
+    // تحقق إن كان المستخدم موجود مسبقًا
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    // حفظ المستخدم بدون تشفير
+    const newUser = new User({
+      username,
+      email,
+      password // بدون تشفير
+      // role: 'user' ← إذا كنت تستخدمه، احذفه الآن
+    });
+
     await newUser.save();
-    res.redirect('/auth/login');
+    res.status(201).json({ message: 'User registered successfully' });
+
   } catch (err) {
-    res.status(500).send('Error while registering the account');
+    console.error('Registration Error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// صفحة تسجيل الدخول
-router.get('/login', (req, res) => {
-  res.render('login', { error: null });
-});
-
-// تنفيذ تسجيل الدخول
+// تسجيل الدخول
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
+
+    // التحقق من وجود المستخدم
     const user = await User.findOne({ email });
     if (!user) {
-      return res.render('login', { error: 'Email not registered' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    // مقارنة كلمة المرور مباشرة (بدون تشفير)
     if (user.password !== password) {
-      return res.render('login', { error: 'The password is incorrect' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // حفظ المستخدم في الجلسة بدلاً من JWT
-    req.session.userId = user._id;
+    // إنشاء توكن
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
 
-    res.redirect('/users/profile');
+    res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+        // role: user.role ← لا حاجة له إذا شلت الـ role
+      },
+    });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send('A server error occurred while logging in.');
+    console.error('Login Error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
-});
-
-// تسجيل الخروج
-router.post('/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      console.log(err);
-      return res.redirect('/');
-    }
-    res.clearCookie('connect.sid');
-    res.redirect('/auth/login');
-  });
 });
 
 module.exports = router;
