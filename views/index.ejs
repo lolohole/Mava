@@ -255,7 +255,7 @@ body {
 <!-- Main content -->
 <div class="container mt-4">
   <% if (posts && posts.length > 0) { %>
-    <% posts.forEach(post => { %>
+    <% posts.forEach((post, index) => { %>
       <div class="post-card" data-post-id="<%= post._id %>">
         <div class="post-header">
           <% if (post.user) { %>
@@ -283,13 +283,11 @@ body {
           <div class="left-icons">
             <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
             <a href="#comment-btn" title="Comment" role="button" class="btn-comment">
-  <i class="bi bi-chat"></i>
-</a>
+              <i class="bi bi-chat"></i>
+            </a>
 
             <% if (currentUser) { %>
-                   <!-- 
-  <i class="bi <%= currentUser.bookmarks.includes(post._id) ? 'bi-bookmark-fill text-primary' : 'bi-bookmark' %> btn-bookmark" data-post-id="<%= post._id %>"></i>
-Media display -->
+              <!-- يمكنك تفعيل زر الحفظ لاحقًا -->
             <% } %>
 
             <div class="reaction-group">
@@ -306,7 +304,6 @@ Media display -->
           </div>
         </div>
 
-        <!-- Share options panel -->
         <div class="share-options p-2" style="display: none;">
           <button class="btn btn-outline-secondary btn-sm copy-link">📋 Copy Link</button>
           <button class="btn btn-outline-primary btn-sm whatsapp-share">WhatsApp</button>
@@ -326,43 +323,37 @@ Media display -->
           <% } %>
         </div>
 
-       <div class="comments-section" id="comment-btn">
-  <% post.comments.slice(0, 3).forEach(comment => { %>
-    <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
-  <% }) %>
-  
-  <% if (post.comments.length > 3) { %>
-    <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
-  <% } %>
-</div>
+        <div class="comments-section" id="comment-btn">
+          <% post.comments.slice(0, 3).forEach(comment => { %>
+            <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
+          <% }) %>
 
-<!-- الفورم الخاصة بالتعليق -->
-<form class="save-post-form" data-post-id="<%= post._id %>">
-  <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
-    <button type="submit" class="save-btn saved">🗑 Remove save</button>
-  <% } else { %>
-    <button type="submit" class="save-btn">💾 Save</button>
-  <% } %>
-</form>
+          <% if (post.comments.length > 3) { %>
+            <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
+          <% } %>
+        </div>
 
-<% if (currentUser) { %>
-  <form class="add-comment" data-post-id="<%= post._id %>">
-    <input type="text" name="text" />
-    <button type="submit" >Post</button>
-  </form>
-<% } else { %>
-  <p class="text-center text-muted">Log in to comment</p>
-<% } %>
+        <!-- Save form -->
+        <form class="save-post-form" data-post-id="<%= post._id %>">
+          <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
+            <button type="submit" class="save-btn saved">🗑 Remove save</button>
+          <% } else { %>
+            <button type="submit" class="save-btn">💾 Save</button>
+          <% } %>
+        </form>
 
-
-
-        
-
-       
+        <!-- Add comment form -->
+        <% if (currentUser) { %>
+          <form class="add-comment" data-post-id="<%= post._id %>">
+            <input type="text" name="text" />
+            <button type="submit">Post</button>
+          </form>
+        <% } else { %>
+          <p class="text-center text-muted">Log in to comment</p>
+        <% } %>
       </div>
 
-
-<!-- ✅ إعلان CPA بعد كل 10 منشورات -->
+      <!-- ✅ إعلان CPA بعد كل 10 منشورات -->
       <% if ((index + 1) === 10) { %>
 
         <div class="sidebar my-4 p-3 bg-light border rounded">
@@ -811,6 +802,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
