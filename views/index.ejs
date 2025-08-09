@@ -357,6 +357,7 @@ body {
               <!-- يمكنك تفعيل زر الحفظ لاحقًا -->
  
             <% } %>
+              <!-- يمكنك تفعيل زر الحفظ لاحقًا
 
             <div class="reaction-group">
               <i class="toggle-reactions bi bi-emoji-smile"></i>
@@ -366,7 +367,7 @@ body {
                 <i class="bi bi-emoji-frown-fill reaction-icon" data-type="sad"></i>
               </div>
             </div>
-
+ -->
             <!-- Share button -->
             <i class="bi bi-share btn-share" title="Share" role="button"></i>
           </div>
@@ -789,23 +790,7 @@ document.querySelectorAll('.post-card').forEach(card => {
 
    
     
-    // Handling reactions
-    document.querySelectorAll('.toggle-reactions').forEach(btn => {
-      btn.addEventListener('mouseover', () => btn.nextElementSibling.style.display = 'flex');
-      btn.nextElementSibling.addEventListener('mouseleave', e => e.currentTarget.style.display = 'none');
-    });
-    document.querySelectorAll('.reaction-icon').forEach(icon => {
-      icon.addEventListener('click', async () => {
-        const postId = icon.closest('.post-card').dataset.postId;
-        const type = icon.dataset.type;
-        await fetch(`/posts/react/${postId}`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ type })
-        });
-        icon.closest('.reactions-popup').style.display = 'none';
-      });
-    });
+  
 
     // Handling swipe actions
     document.querySelectorAll('.post-card').forEach(card => {
@@ -873,12 +858,36 @@ footer strong {
         }
       });
     });
+
+
+
+
+
+
+  // Handling reactions
+    document.querySelectorAll('.toggle-reactions').forEach(btn => {
+      btn.addEventListener('mouseover', () => btn.nextElementSibling.style.display = 'flex');
+      btn.nextElementSibling.addEventListener('mouseleave', e => e.currentTarget.style.display = 'none');
+    });
+    document.querySelectorAll('.reaction-icon').forEach(icon => {
+      icon.addEventListener('click', async () => {
+        const postId = icon.closest('.post-card').dataset.postId;
+        const type = icon.dataset.type;
+        await fetch(`/posts/react/${postId}`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ type })
+        });
+        icon.closest('.reactions-popup').style.display = 'none';
+      });
+    });
 </script> 
 -->
 
 
 </body>
 </html>
+
 
 
 
