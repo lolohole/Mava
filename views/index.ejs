@@ -355,6 +355,13 @@ body {
 
             <% if (currentUser) { %>
               <!-- يمكنك تفعيل زر الحفظ لاحقًا -->
+ <form class="save-post-form" data-post-id="<%= post._id %>">
+          <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
+            <button type="submit" class="save-btn saved">🗑 Remove save</button>
+          <% } else { %>
+            <button type="submit" class="save-btn">💾 Save</button>
+          <% } %>
+        </form>
             <% } %>
 
             <div class="reaction-group">
@@ -401,13 +408,7 @@ body {
         </div>
 
         <!-- Save form -->
-        <form class="save-post-form" data-post-id="<%= post._id %>">
-          <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
-            <button type="submit" class="save-btn saved">🗑 Remove save</button>
-          <% } else { %>
-            <button type="submit" class="save-btn">💾 Save</button>
-          <% } %>
-        </form>
+       
 
         <!-- Add comment form -->
         <% if (currentUser) { %>
@@ -883,6 +884,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
