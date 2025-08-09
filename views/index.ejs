@@ -617,7 +617,7 @@ document.querySelectorAll('.save-post-form').forEach(form => {
     const isSaved = button.classList.contains('saved');
 
     try {
-      const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+      const response = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -925,6 +925,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
