@@ -1,4 +1,10 @@
+
 // لايك
+/*
+هذا تعليق
+على أكثر من
+سطر في جافا سكربت
+
 document.querySelectorAll('.like-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
     const postId = btn.dataset.id;
@@ -80,6 +86,7 @@ socket.on('newNotification', (data) => {
   notifDropdown.prepend(item);
 });
 
+*/
 
 
 
