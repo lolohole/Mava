@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const expressLayouts = require('express-ejs-layouts');
+const compression = require('compression');
 
 const User = require('./models/User');
 const Message = require('./models/Message');
@@ -27,6 +28,7 @@ const io = new Server(server);
 
 const Sentiment = require('sentiment');
 const sentiment = new Sentiment();
+app.use(compression());
 
 // إعداد EJS
 app.set('view engine', 'ejs');
@@ -37,6 +39,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
 //securityConfig(app);
 //app.use(xssSanitizer);
 //app.use(csurf({ cookie: true }));
@@ -316,5 +319,6 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🌐 Server running on port ${PORT}`);
 });
+
 
 
