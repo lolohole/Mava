@@ -367,115 +367,224 @@ body {
  <!-- Main content -->
 <!-- Main content -->
 <div class="container mt-4">
-
-<section id="gaza-fund">
+  <section id="gaza-fund">
     <div class="container">
-        <h2>Support Gaza Children</h2>
-        <p>These innocent children need your help. Donate now and make a difference.</p>
-        
-        <div class="video-section">
-            <video src="/images/gazaVideo.webm"   type="video/mp4" controls autoplay>                Your browser does not support the video tag.
-</video> 
-                    
-        </div>
-        
-        <div class="donation-button">
-            <a href="https://www.patreon.com/posts/help-gaza-one-136099152?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank">
-                <button class="donate-button">Donate Now</button>
-            </a>
-        </div>
+      <h2>Support Gaza Children</h2>
+      <p>These innocent children need your help. Donate now and make a difference.</p>
+      
+      <div class="video-section">
+        <video src="/images/gazaVideo.webm" type="video/mp4" controls autoplay>
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      
+      <div class="donation-button">
+        <a href="https://www.patreon.com/posts/help-gaza-one-136099152?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank">
+          <button class="donate-button">Donate Now</button>
+        </a>
+      </div>
     </div>
-</section>
+  </section>
 
   <% if (posts && posts.length > 0) { %>
-<% posts.forEach(function(post) { %>
-    <div class="post-card" data-post-id="<%= post._id %>">
-      <div class="post-header">
-        <% if (post.user) { %>
-          <a href="/users/<%= post.user._id %>">
-            <img src="<%= post.user.avatar || '/default-avatar.png' %>" class="avatar" />
-          </a>
-          <strong><%= post.user.username %></strong>
-        <% } else { %>
-          <img src="/default-avatar.png" class="avatar" />
-          <strong>Unknown User</strong>
-        <% } %>
-      </div>
-
-      <!-- Media -->
-      <% if (post.mediaType === 'image') { %>
-        <img class="post-image" src="<%= post.media %>" alt="Post Image" />
-      <% } else if (post.mediaType === 'video') { %>
-        <video class="post-video" controls>
-          <source src="<%= post.media %>" type="video/mp4" />
-          Your browser doesn’t support video.
-        </video>
-      <% } %>
-
-      <div class="post-actions">
-        <div class="left-icons">
-          <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
-          <a href="#comment-btn" title="Comment" role="button" class="btn-comment">
-            <i class="bi bi-chat"></i>
-          </a>
-
-          <i class="bi bi-share btn-share" title="Share" role="button"></i>
-        </div>
-      </div>
-
-      <div class="share-options p-2" style="display: none;">
-        <button class="btn btn-outline-secondary btn-sm copy-link">📋 Copy Link</button>
-        <button class="btn btn-outline-primary btn-sm whatsapp-share">WhatsApp</button>
-        <button class="btn btn-outline-info btn-sm telegram-share">Telegram</button>
-        <button class="btn btn-outline-success btn-sm facebook-share">Facebook</button>
-      </div>
-
-      <div class="likes-count">
-        <%= post.likes.length %> Likes
-      </div>
-
-      <div class="post-caption">
-        <% if (post.user) { %>
-          <strong><%= post.user.username %></strong> <%= post.caption %>
-        <% } else { %>
-          <strong>Unknown User</strong> <%= post.caption %>
-        <% } %>
-      </div>
-
-      <!-- Comments -->
-      <div class="comments-section" id="comment-btn">
-        <% if (post.comments.length > 0) { %>
-          <% const firstComment = post.comments[0]; %>
-          <p><strong><%= firstComment.user?.username || 'Unknown' %>:</strong> <%= firstComment.text %></p>
-          <% if (post.comments.length > 1) { %>
-            <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">
-              Show more comments
-            </button>
+    <% posts.forEach((post, index) => { %>
+      <div class="post-card" data-post-id="<%= post._id %>">
+        <div class="post-header">
+          <% if (post.user) { %>
+            <a href="/users/<%= post.user._id %>">
+              <img src="<%= post.user.avatar || '/default-avatar.png' %>" class="avatar" />
+            </a>
+            <strong><%= post.user.username %></strong>
+          <% } else { %>
+            <img src="/default-avatar.png" class="avatar" />
+            <strong>Unknown User</strong>
           <% } %>
+        </div>
+
+        <!-- Media display -->
+        <% if (post.mediaType === 'image') { %>
+          <img class="post-image" src="<%= post.media %>" alt="Post Image" />
+        <% } else if (post.mediaType === 'video') { %>
+          <video class="post-video" controls>
+            <source src="<%= post.media %>" type="video/mp4" />
+            Your browser doesn’t support video.
+          </video>
+        <% } %>
+
+        <div class="post-actions">
+          <div class="left-icons">
+            <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
+            <a href="#comment-btn" title="Comment" role="button" class="btn-comment">
+              <i class="bi bi-chat"></i>
+            </a>
+
+            <% if (currentUser) { %>
+              <!-- يمكنك تفعيل زر الحفظ لاحقًا -->
+            <% } %>
+
+            <div class="reaction-group">
+              <i class="toggle-reactions bi bi-emoji-smile"></i>
+              <div class="reactions-popup" style="display:none;">
+                <i class="bi bi-heart-fill reaction-icon" data-type="heart"></i>
+                <i class="bi bi-hand-thumbs-up-fill reaction-icon" data-type="clap"></i>
+                <i class="bi bi-emoji-frown-fill reaction-icon" data-type="sad"></i>
+              </div>
+            </div>
+
+            <!-- Share button -->
+            <i class="bi bi-share btn-share" title="Share" role="button"></i>
+          </div>
+        </div>
+
+        <div class="share-options p-2" style="display: none;">
+          <button class="btn btn-outline-secondary btn-sm copy-link">📋 Copy Link</button>
+          <button class="btn btn-outline-primary btn-sm whatsapp-share">WhatsApp</button>
+          <button class="btn btn-outline-info btn-sm telegram-share">Telegram</button>
+          <button class="btn btn-outline-success btn-sm facebook-share">Facebook</button>
+        </div>
+
+        <div class="likes-count">
+          <%= post.likes.length %> Likes
+        </div>
+
+        <div class="post-caption">
+          <% if (post.user) { %>
+            <strong><%= post.user.username %></strong> <%= post.caption %>
+          <% } else { %>
+            <strong>Unknown User</strong> <%= post.caption %>
+          <% } %>
+        </div>
+
+        <div class="comments-section" id="comment-btn">
+          <% post.comments.slice(0, 3).forEach(comment => { %>
+            <p><strong><%= comment.user?.username || 'Unknown' %>:</strong> <%= comment.text %></p>
+          <% }) %>
+
+          <% if (post.comments.length > 3) { %>
+            <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
+          <% } %>
+        </div>
+
+        <!-- Save form -->
+        <form class="save-post-form" data-post-id="<%= post._id %>">
+          <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
+            <button type="submit" class="save-btn saved">🗑 Remove save</button>
+          <% } else { %>
+            <button type="submit" class="save-btn">💾 Save</button>
+          <% } %>
+        </form>
+
+        <!-- Add comment form -->
+        <% if (currentUser) { %>
+          <form class="add-comment" data-post-id="<%= post._id %>">
+            <input type="text" name="text" placeholder="Write a comment..." />
+            <button type="submit">Post</button>
+          </form>
+        <% } else { %>
+          <p class="text-center text-muted">Log in to comment</p>
         <% } %>
       </div>
 
-      <!-- Save / Unsave -->
-      <form class="save-post-form" data-post-id="<%= post._id %>">
-        <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
-          <button type="submit" class="save-btn saved">🗑 Remove save</button>
-        <% } else { %>
-          <button type="submit" class="save-btn">💾 Save</button>
-        <% } %>
-      </form>
-
-      <!-- Add comment -->
-      <% if (currentUser) { %>
-        <form class="add-comment" data-post-id="<%= post._id %>">
-          <input type="text" name="text" placeholder="Write a comment..." />
-          <button type="submit">Post</button>
-        </form>
-      <% } else { %>
-        <p class="text-center text-muted">Log in to comment</p>
+      <!-- CPA Ads after specific posts -->
+      <% if ((index + 1) === 10) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Sign up now and win amazing rewards!</h5>
+          <div class="ad mb-3">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=66429" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/566de4477c2a93c22908f617deabdd12.png" class="img-fluid" alt="إعلان CPA 1">
+            </a>
+          </div>
+        </div>
       <% } %>
-    </div>
-  <% }) %>
-<% } %>
+
+      <% if ((index + 1) === 20) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Grab your free $50 Visa gift card now!</h5>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if ((index + 1) === 30) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Win a free iPhone – No purchase required!</h5>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=68912" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/303173475a809285457c096d7a70f3fc.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if ((index + 1) === 40) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if ((index + 1) === 50) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Sign up now and win amazing rewards!</h5>
+          <div class="ad mb-3">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=66429" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/566de4477c2a93c22908f617deabdd12.png" class="img-fluid" alt="إعلان CPA 1">
+            </a>
+          </div>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if ((index + 1) === 60) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Win a free iPhone – No purchase required!</h5>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=68912" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/303173475a809285457c096d7a70f3fc.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if ((index + 1) === 70) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (index > 80 && index % 10 === 0) { %>
+        <div class="sidebar my-4 p-3 bg-light border rounded">
+          <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
+          <div class="ad">
+            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
+              <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+    <% }) %>
+  <% } else { %>
+    <p class="text-center text-muted">No posts yet.</p>
+  <% } %>
+</div>
+
 
 <script>
   // زر الحفظ / إزالة الحفظ
@@ -908,6 +1017,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
