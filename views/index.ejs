@@ -388,107 +388,94 @@ body {
 </section>
 
   <% if (posts && posts.length > 0) { %>
-    <% posts.forEach((post, index) => { %>
-      <div class="post-card" data-post-id="<%= post._id %>">
-        <div class="post-header">
-          <% if (post.user) { %>
-            <a href="/users/<%= post.user._id %>">
-              <img src="<%= post.user.avatar || '/default-avatar.png' %>" class="avatar" />
-            </a>
-            <strong><%= post.user.username %></strong>
-          <% } else { %>
-            <img src="/default-avatar.png" class="avatar" />
-            <strong>Unknown User</strong>
-          <% } %>
-        </div>
-
-        <!-- Media display -->
-        <% if (post.mediaType === 'image') { %>
-          <img class="post-image" src="<%= post.media %>" alt="Post Image" />
-        <% } else if (post.mediaType === 'video') { %>
-          <video class="post-video" controls>
-            <source src="<%= post.media %>" type="video/mp4" />
-            Your browser doesn’t support video.
-          </video>
-        <% } %>
-
-        <div class="post-actions">
-          <div class="left-icons">
-            <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
-            <a href="#comment-btn" title="Comment" role="button" class="btn-comment">
-              <i class="bi bi-chat"></i>
-            </a>
-
-            <% if (currentUser) { %>
-              <!-- يمكنك تفعيل زر الحفظ لاحقًا -->
- 
-            <% } %>
-              <!-- يمكنك تفعيل زر الحفظ لاحقًا
-
-            <div class="reaction-group">
-              <i class="toggle-reactions bi bi-emoji-smile"></i>
-              <div class="reactions-popup" style="display:none;">
-                <i class="bi bi-heart-fill reaction-icon" data-type="heart"></i>
-                <i class="bi bi-hand-thumbs-up-fill reaction-icon" data-type="clap"></i>
-                <i class="bi bi-emoji-frown-fill reaction-icon" data-type="sad"></i>
-              </div>
-            </div>
- -->
-            <!-- Share button -->
-            <i class="bi bi-share btn-share" title="Share" role="button"></i>
-          </div>
-        </div>
-
-        <div class="share-options p-2" style="display: none;">
-          <button class="btn btn-outline-secondary btn-sm copy-link">📋 Copy Link</button>
-          <button class="btn btn-outline-primary btn-sm whatsapp-share">WhatsApp</button>
-          <button class="btn btn-outline-info btn-sm telegram-share">Telegram</button>
-          <button class="btn btn-outline-success btn-sm facebook-share">Facebook</button>
-        </div>
-
-        <div class="likes-count">
-          <%= post.likes.length %> Likes
-        </div>
-
-        <div class="post-caption">
-          <% if (post.user) { %>
-            <strong><%= post.user.username %></strong> <%= post.caption %>
-          <% } else { %>
-            <strong>Unknown User</strong> <%= post.caption %>
-          <% } %>
-        </div>
-
-        <div class="comments-section" id="comment-btn">
-          
-          <% }) %>
-
-        
-          <% if (post.comments.length > 3) { %>
-            <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
-          <% } %>
-        </div>
-
-        <!-- Save form -->
-
-<form class="save-post-form" data-post-id="<%= post._id %>">
-          <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
-            <button type="submit" class="save-btn saved">🗑 Remove save</button>
-          <% } else { %>
-            <button type="submit" class="save-btn">💾 Save</button>
-          <% } %>
-        </form>
-
-        <!-- Add comment form -->
-        <% if (currentUser) { %>
-          <form class="add-comment" data-post-id="<%= post._id %>">
-            <input type="text" name="text" />
-            <button type="submit">Post</button>
-          </form>
+  <% posts.forEach((post) => { %>
+    <div class="post-card" data-post-id="<%= post._id %>">
+      <div class="post-header">
+        <% if (post.user) { %>
+          <a href="/users/<%= post.user._id %>">
+            <img src="<%= post.user.avatar || '/default-avatar.png' %>" class="avatar" />
+          </a>
+          <strong><%= post.user.username %></strong>
         <% } else { %>
-          <p class="text-center text-muted">Log in to comment</p>
+          <img src="/default-avatar.png" class="avatar" />
+          <strong>Unknown User</strong>
         <% } %>
       </div>
 
+      <!-- Media -->
+      <% if (post.mediaType === 'image') { %>
+        <img class="post-image" src="<%= post.media %>" alt="Post Image" />
+      <% } else if (post.mediaType === 'video') { %>
+        <video class="post-video" controls>
+          <source src="<%= post.media %>" type="video/mp4" />
+          Your browser doesn’t support video.
+        </video>
+      <% } %>
+
+      <div class="post-actions">
+        <div class="left-icons">
+          <i class="bi <%= post.likes.includes(currentUser?._id) ? 'bi-heart-fill text-danger' : 'bi-heart' %> btn-like" title="Like" role="button"></i>
+          <a href="#comment-btn" title="Comment" role="button" class="btn-comment">
+            <i class="bi bi-chat"></i>
+          </a>
+
+          <i class="bi bi-share btn-share" title="Share" role="button"></i>
+        </div>
+      </div>
+
+      <div class="share-options p-2" style="display: none;">
+        <button class="btn btn-outline-secondary btn-sm copy-link">📋 Copy Link</button>
+        <button class="btn btn-outline-primary btn-sm whatsapp-share">WhatsApp</button>
+        <button class="btn btn-outline-info btn-sm telegram-share">Telegram</button>
+        <button class="btn btn-outline-success btn-sm facebook-share">Facebook</button>
+      </div>
+
+      <div class="likes-count">
+        <%= post.likes.length %> Likes
+      </div>
+
+      <div class="post-caption">
+        <% if (post.user) { %>
+          <strong><%= post.user.username %></strong> <%= post.caption %>
+        <% } else { %>
+          <strong>Unknown User</strong> <%= post.caption %>
+        <% } %>
+      </div>
+
+      <!-- Comments -->
+      <div class="comments-section" id="comment-btn">
+        <% if (post.comments.length > 0) { %>
+          <% const firstComment = post.comments[0]; %>
+          <p><strong><%= firstComment.user?.username || 'Unknown' %>:</strong> <%= firstComment.text %></p>
+          <% if (post.comments.length > 1) { %>
+            <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">
+              Show more comments
+            </button>
+          <% } %>
+        <% } %>
+      </div>
+
+      <!-- Save / Unsave -->
+      <form class="save-post-form" data-post-id="<%= post._id %>">
+        <% if (currentUser && currentUser.savedPosts?.includes(post._id.toString())) { %>
+          <button type="submit" class="save-btn saved">🗑 Remove save</button>
+        <% } else { %>
+          <button type="submit" class="save-btn">💾 Save</button>
+        <% } %>
+      </form>
+
+      <!-- Add comment -->
+      <% if (currentUser) { %>
+        <form class="add-comment" data-post-id="<%= post._id %>">
+          <input type="text" name="text" placeholder="Write a comment..." />
+          <button type="submit">Post</button>
+        </form>
+      <% } else { %>
+        <p class="text-center text-muted">Log in to comment</p>
+      <% } %>
+    </div>
+  <% }) %>
+<% } %>
 
 <script>
   // زر الحفظ / إزالة الحفظ
@@ -504,21 +491,14 @@ body {
         headers: { 'Content-Type': 'application/json' }
       });
 
-const result = await res.json();
-if (res.ok) {
-  if (isSaved) {
-    button.classList.remove('saved');
-    button.textContent = '💾 Save';
-  } else {
-    button.classList.add('saved');
-    button.textContent = '🗑 Remove Saved';
-  }
-}
+      if (res.ok) {
+        button.classList.toggle('saved');
+        button.textContent = isSaved ? '💾 Save' : '🗑 Remove save';
+      }
     });
   });
 
-
-  // إرسال تعليق جديد
+  // إضافة تعليق جديد
   document.querySelectorAll('.add-comment').forEach(form => {
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -545,31 +525,28 @@ if (res.ok) {
         const commentsSection = form.closest('.post-card').querySelector('.comments-section');
         commentsSection.innerHTML = '';
 
-        comments.slice(0, 1).forEach(comment => {
-          commentsSection.innerHTML += `<p><strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}</p>`;
-        });
+        if (comments.length > 0) {
+          const firstComment = comments[0];
+          commentsSection.innerHTML += `<p><strong>${firstComment.user?.username || 'Unknown'}:</strong> ${firstComment.text}</p>`;
+        }
 
-        if (comments.length > 3) {
+        if (comments.length > 1) {
           commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
         }
 
         textInput.value = '';
-        attachShowMoreHandler(); // لإعادة تفعيل زر "عرض المزيد"
+        attachShowMoreHandler();
       } catch (error) {
         console.error(error);
-       // alert('Log in to comment');
       }
     });
   });
 
-  // زر عرض المزيد من التعليقات
+  // زر Show more comments
   function attachShowMoreHandler() {
     document.querySelectorAll('.show-more-comments').forEach(button => {
-      button.addEventListener('click', async function () {
+      button.addEventListener('click', async () => {
         const postId = button.getAttribute('data-post-id');
-        button.textContent = 'Show less comments';
-        button.classList.add('show-less-comments');
-        button.classList.remove('show-more-comments');
 
         try {
           const res = await fetch(`/posts/comments/${postId}?page=2`);
@@ -581,6 +558,9 @@ if (res.ok) {
             commentElement.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
             commentsSection.insertBefore(commentElement, button);
           });
+
+          // إزالة الزر بعد عرض المزيد
+          button.remove();
         } catch (error) {
           console.error('Error fetching comments:', error);
         }
@@ -588,31 +568,9 @@ if (res.ok) {
     });
   }
 
-  // تفعيل أولي لزر عرض المزيد بعد تحميل الصفحة
+  // تفعيل زر "عرض المزيد" بعد تحميل الصفحة
   attachShowMoreHandler();
 </script>
-<script>
-  // عند الضغط على "Show more comments"
-  document.querySelectorAll('.show-more-comments').forEach(button => {
-    button.addEventListener('click', async function () {
-      const postId = this.getAttribute('data-post-id');
-      const res = await fetch(`/posts/${postId}/comments`);
-      const data = await res.json();
-
-      // إضافة التعليقات المتبقية بعد أول 3
-      const commentsSection = this.closest('.comments-section');
-      data.comments.forEach(comment => {
-        const commentElement = document.createElement('p');
-        commentElement.innerHTML = `<strong>${comment.user.username}:</strong> ${comment.text}`;
-        commentsSection.insertBefore(commentElement, this); // إضافة التعليق قبل الزر
-      });
-
-      // إخفاء الزر بعد تحميل المزيد من التعليقات
-      this.style.display = 'none';
-    });
-  });
-</script>
-
 
 
 
@@ -950,6 +908,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
