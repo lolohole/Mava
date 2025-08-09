@@ -107,7 +107,7 @@
 
 
     <link rel="stylesheet" href="/css/theme.css">
-<script>
+<script defer>
   window.addEventListener('DOMContentLoaded', () => {
     const t = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
     if (Object.keys(t).length) {
@@ -117,19 +117,7 @@
     }
   });
 </script>
-<script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const t = <%- JSON.stringify(currentUser?.themeSettings || {}) %>;
-      if (Object.keys(t).length) {
-        for (const k in t) {
-          document.documentElement.style.setProperty(
-            '--' + k.replace(/([A-Z])/g, '-$1').toLowerCase(),
-            t[k]
-          );
-        }
-      }
-    });
-  </script>
+
 
   <!-- Custom Styles -->
   <style>
@@ -394,39 +382,29 @@ canvas#bgCanvas {
   <script>const USER_TOKEN = '<%= token || "" %>';</script>
 
   <!-- Custom Chat JS -->
-  <script src="/js/chat.js"></script>
+  <script src="/js/chat.js" defer></script>
 
   <!-- Canvas Code -->
   
 
   <!-- Google Translate (optional for translation) -->
-  <script type="text/javascript">
+  <script type="text/javascript" defer>
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'en,ar', // Add other languages here
+        includedLanguages: 'en,ar,tr,de,ru,es,fr,hi,it,pt,ja,zh,ko', // Add other languages here
         layout: google.translate.TranslateElement.InlineLayout.SIMPLE
       }, 'google_translate_element');
     }
   </script>
-  <script type="text
-  <!-- Google Translate (optional for translation) -->
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,ar', // Add other languages here if needed
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-      }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
 
   <!-- Optionally, add a div for the Google Translate widget -->
   <div id="google_translate_element" style="position: fixed; bottom: 10px; left: 10px;"></div>
 
   <!-- Custom JavaScript -->
-  <script src="/public/js/main.js"></script>
+  <script src="/public/js/main.js" defer></script>
   
    <script>
   if ('serviceWorker' in navigator) {
@@ -1055,6 +1033,7 @@ function startAuroraBackground() {
 
 </body>
 </html>
+
 
 
 
