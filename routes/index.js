@@ -36,6 +36,7 @@ router.get("/", async (req, res) => {
     res.status(500).send("An error occurred while loading posts.");
   }
 });
+/*
 
 // نقطة النهاية الخاصة بتحميل المزيد من التعليقات
 router.get("/posts/:postId/comments", async (req, res) => {
@@ -53,6 +54,7 @@ router.get("/posts/:postId/comments", async (req, res) => {
     res.status(500).send("An error occurred while loading comments.");
   }
 });
+*/
 
 
 // Static Pages Routes (About, Apps, Contact, etc.)
@@ -224,3 +226,4 @@ router.post('/post/:id/comment', auth, async (req, res) => {
 });
 */
 module.exports = router;
+
