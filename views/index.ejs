@@ -426,36 +426,30 @@ body {
 <script>
   // زر الحفظ / إزالة الحفظ
   document.querySelectorAll('.save-post-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const postId = form.getAttribute('data-post-id');
       const button = form.querySelector('button');
       const isSaved = button.classList.contains('saved');
 
-      try {
-        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
+      const res = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-        const result = await response.json();
-
-        if (response.ok) {
-          if (isSaved) {
-            button.classList.remove('saved');
-            button.textContent = '💾 Save';
-          } else {
-            button.classList.add('saved');
-            button.textContent = '🗑 Remove save';
-          }
-        } else {
-          alert(result.message || 'An error occurred while saving.');
-        }
-      } catch (err) {
-        console.error(err);
-      }
+const result = await res.json();
+if (res.ok) {
+  if (isSaved) {
+    button.classList.remove('saved');
+    button.textContent = '💾 Save';
+  } else {
+    button.classList.add('saved');
+    button.textContent = '🗑 Remove Saved';
+  }
+}
     });
   });
+
 
   // إرسال تعليق جديد
   document.querySelectorAll('.add-comment').forEach(form => {
@@ -885,6 +879,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
