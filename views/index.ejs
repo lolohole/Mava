@@ -371,13 +371,13 @@ body {
     <div class="container">
       <h2>Support Gaza Children</h2>
       <p>These innocent children need your help. Donate now and make a difference.</p>
-      
+
       <div class="video-section">
         <video src="/images/gazaVideo.webm" type="video/mp4" controls autoplay>
           Your browser does not support the video tag.
         </video>
       </div>
-      
+
       <div class="donation-button">
         <a href="https://www.patreon.com/posts/help-gaza-one-136099152?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank">
           <button class="donate-button">Donate Now</button>
@@ -418,10 +418,6 @@ body {
               <i class="bi bi-chat"></i>
             </a>
 
-            <% if (currentUser) { %>
-              <!-- يمكنك تفعيل زر الحفظ لاحقًا -->
-            <% } %>
-
             <div class="reaction-group">
               <i class="toggle-reactions bi bi-emoji-smile"></i>
               <div class="reactions-popup" style="display:none;">
@@ -455,10 +451,12 @@ body {
           <% } %>
         </div>
 
-        <div class="comments-section" id="comment-btn">
-          <% post.comments.slice(0, 3).forEach(comment => { %>
-            <p><strong><%= comment.user?.username || 'Unknown' %>:</strong> <%= comment.text %></p>
-          <% }) %>
+        <div class="comments-section" id="comment-btn" data-post-id="<%= post._id %>">
+          <% 
+            const firstComments = post.comments.slice(0, 3);
+            firstComments.forEach(comment => { %>
+            <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
+          <% }); %>
 
           <% if (post.comments.length > 3) { %>
             <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
@@ -477,7 +475,7 @@ body {
         <!-- Add comment form -->
         <% if (currentUser) { %>
           <form class="add-comment" data-post-id="<%= post._id %>">
-            <input type="text" name="text" placeholder="Write a comment..." />
+            <input type="text" name="text" />
             <button type="submit">Post</button>
           </form>
         <% } else { %>
@@ -485,7 +483,7 @@ body {
         <% } %>
       </div>
 
-      <!-- CPA Ads after specific posts -->
+      <!-- CPA Ads injection as before -->
       <% if ((index + 1) === 10) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Sign up now and win amazing rewards!</h5>
@@ -496,7 +494,6 @@ body {
           </div>
         </div>
       <% } %>
-
       <% if ((index + 1) === 20) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Grab your free $50 Visa gift card now!</h5>
@@ -507,7 +504,6 @@ body {
           </div>
         </div>
       <% } %>
-
       <% if ((index + 1) === 30) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Win a free iPhone – No purchase required!</h5>
@@ -518,7 +514,6 @@ body {
           </div>
         </div>
       <% } %>
-
       <% if ((index + 1) === 40) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
@@ -529,7 +524,6 @@ body {
           </div>
         </div>
       <% } %>
-
       <% if ((index + 1) === 50) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Sign up now and win amazing rewards!</h5>
@@ -545,7 +539,6 @@ body {
           </div>
         </div>
       <% } %>
-
       <% if ((index + 1) === 60) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Win a free iPhone – No purchase required!</h5>
@@ -556,7 +549,6 @@ body {
           </div>
         </div>
       <% } %>
-
       <% if ((index + 1) === 70) { %>
         <div class="sidebar my-4 p-3 bg-light border rounded">
           <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
@@ -569,25 +561,25 @@ body {
       <% } %>
 
       <% if (index > 80 && index % 10 === 0) { %>
-        <div class="sidebar my-4 p-3 bg-light border rounded">
-          <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
-          <div class="ad">
-            <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
-              <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
-            </a>
+        <% if (index % 100000 != 0) { %>
+          <div class="sidebar my-4 p-3 bg-light border rounded">
+            <h5 class="text-center">Get a $100 gift card – Limited time offer!</h5>
+            <div class="ad">
+              <a href="https://singingfiles.com/show.php?l=0&u=675494&id=69184" target="_blank">
+                <img src="https://www.cpagrip.com/admin/media/offers/fd53a72697ff8ccd061b625eb6140e6b.png" class="img-fluid" alt="إعلان CPA 2">
+              </a>
+            </div>
           </div>
-        </div>
+        <% } %>
       <% } %>
-
     <% }) %>
   <% } else { %>
     <p class="text-center text-muted">No posts yet.</p>
   <% } %>
 </div>
 
-
 <script>
-  // زر الحفظ / إزالة الحفظ
+  // حفظ أو إزالة حفظ المنشور
   document.querySelectorAll('.save-post-form').forEach(form => {
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -595,14 +587,26 @@ body {
       const button = form.querySelector('button');
       const isSaved = button.classList.contains('saved');
 
-      const res = await fetch(`/posts/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      try {
+        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
 
-      if (res.ok) {
-        button.classList.toggle('saved');
-        button.textContent = isSaved ? '💾 Save' : '🗑 Remove save';
+        if (response.ok) {
+          if (isSaved) {
+            button.classList.remove('saved');
+            button.textContent = '💾 Save';
+          } else {
+            button.classList.add('saved');
+            button.textContent = '🗑 Remove save';
+          }
+        } else {
+          alert(result.message || 'An error occurred while saving.');
+        }
+      } catch (err) {
+        console.error(err);
       }
     });
   });
@@ -631,55 +635,114 @@ body {
         }
 
         const comments = await res.json();
-        const commentsSection = form.closest('.post-card').querySelector('.comments-section');
+        const postCard = form.closest('.post-card');
+        const commentsSection = postCard.querySelector('.comments-section');
+
+        // إعادة بناء قسم التعليقات
         commentsSection.innerHTML = '';
+        const firstComments = comments.slice(0, 3);
+        firstComments.forEach(comment => {
+          const p = document.createElement('p');
+          p.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
+          commentsSection.appendChild(p);
+        });
 
-        if (comments.length > 0) {
-          const firstComment = comments[0];
-          commentsSection.innerHTML += `<p><strong>${firstComment.user?.username || 'Unknown'}:</strong> ${firstComment.text}</p>`;
-        }
+        if (comments.length > 3) {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-link p-0 text-primary show-more-comments';
+          btn.setAttribute('data-post-id', postId);
+          btn.textContent = 'Show more comments';
+          commentsSection.appendChild(btn);
 
-        if (comments.length > 1) {
-          commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
+          attachShowMoreHandler(btn);
         }
 
         textInput.value = '';
-        attachShowMoreHandler();
       } catch (error) {
         console.error(error);
+        alert('Log in to comment');
       }
     });
   });
 
-  // زر Show more comments
-  function attachShowMoreHandler() {
-    document.querySelectorAll('.show-more-comments').forEach(button => {
-      button.addEventListener('click', async () => {
-        const postId = button.getAttribute('data-post-id');
-
-        try {
-          const res = await fetch(`/posts/comments/${postId}?page=2`);
-          const comments = await res.json();
-          const commentsSection = button.closest('.comments-section');
-
-          comments.forEach(comment => {
-            const commentElement = document.createElement('p');
-            commentElement.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
-            commentsSection.insertBefore(commentElement, button);
-          });
-
-          // إزالة الزر بعد عرض المزيد
-          button.remove();
-        } catch (error) {
-          console.error('Error fetching comments:', error);
-        }
+  // دالة تفعيل زر عرض المزيد
+  function attachShowMoreHandler(button) {
+    if (!button) {
+      // في حالة التهيئة لأول مرة، نضيف لكل الأزرار
+      document.querySelectorAll('.show-more-comments').forEach(btn => {
+        btn.removeEventListener('click', handleShowMore);
+        btn.addEventListener('click', handleShowMore);
       });
-    });
+    } else {
+      button.removeEventListener('click', handleShowMore);
+      button.addEventListener('click', handleShowMore);
+    }
   }
 
-  // تفعيل زر "عرض المزيد" بعد تحميل الصفحة
+  async function handleShowMore(event) {
+    const btn = event.currentTarget;
+    const postId = btn.getAttribute('data-post-id');
+    const postCard = btn.closest('.post-card');
+    const commentsSection = postCard.querySelector('.comments-section');
+
+    if (btn.classList.contains('show-more-comments')) {
+      // جلب كل التعليقات وعرضها
+      try {
+        const res = await fetch(`/posts/comments/${postId}`);
+        if (!res.ok) throw new Error('Failed to fetch comments');
+        const comments = await res.json();
+
+        // إزالة كل التعليقات السابقة أول 3 (لنعيد البناء)
+        commentsSection.innerHTML = '';
+
+        comments.forEach(comment => {
+          const p = document.createElement('p');
+          p.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
+          commentsSection.appendChild(p);
+        });
+
+        // زر "Show less comments"
+        btn.textContent = 'Show less comments';
+        btn.classList.remove('show-more-comments');
+        btn.classList.add('show-less-comments');
+        commentsSection.appendChild(btn);
+
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    } else if (btn.classList.contains('show-less-comments')) {
+      // إعادة عرض أول 3 تعليقات فقط
+      try {
+        const res = await fetch(`/posts/comments/${postId}`);
+        if (!res.ok) throw new Error('Failed to fetch comments');
+        const comments = await res.json();
+
+        commentsSection.innerHTML = '';
+        comments.slice(0, 3).forEach(comment => {
+          const p = document.createElement('p');
+          p.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
+          commentsSection.appendChild(p);
+        });
+
+        // زر "Show more comments"
+        btn.textContent = 'Show more comments';
+        btn.classList.remove('show-less-comments');
+        btn.classList.add('show-more-comments');
+        commentsSection.appendChild(btn);
+
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    }
+  }
+
+  // تفعيل الأحداث على أزرار العرض عند التحميل
   attachShowMoreHandler();
+
 </script>
+
+
+
 
 
 
@@ -1017,6 +1080,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
