@@ -22,7 +22,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'your-folder-name', // اسم مجلد التخزين في Cloudinary
+    folder: 'profile-pichre', // اسم مجلد التخزين في Cloudinary
     allowed_formats: ['jpg', 'jpeg', 'png'],
     transformation: [{ width: 500, height: 500, crop: 'limit' }]
   },
@@ -295,4 +295,5 @@ router.post('/profile/delete', auth, async (req, res) => {
 
 
 module.exports = router;
+
 
