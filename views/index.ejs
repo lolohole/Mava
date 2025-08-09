@@ -621,7 +621,6 @@ body {
           headers: { 'Content-Type': 'application/json' }
         });
 
-        const result = await response.json();
 
         if (response.ok) {
           if (isSaved) {
@@ -639,6 +638,7 @@ body {
       }
     });
   });
+        const result = await response.json();
 
   // إرسال تعليق جديد
   document.querySelectorAll('.add-comment').forEach(form => {
@@ -920,6 +920,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
