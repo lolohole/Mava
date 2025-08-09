@@ -393,7 +393,7 @@ body {
         </div>
 
         <div class="comments-section" id="comment-btn">
-          <% post.comments.slice(0, 3).forEach(comment => { %>
+          <% post.comments.slice(0, 1).forEach(comment => { %>
             <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
           <% }) %>
 
@@ -491,7 +491,7 @@ if (res.ok) {
         attachShowMoreHandler(); // لإعادة تفعيل زر "عرض المزيد"
       } catch (error) {
         console.error(error);
-        alert('Log in to comment');
+       // alert('Log in to comment');
       }
     });
   });
@@ -887,6 +887,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
