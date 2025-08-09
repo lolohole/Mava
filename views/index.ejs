@@ -420,6 +420,139 @@ body {
         <% } %>
       </div>
 
+
+<script>
+  // زر الحفظ / إزالة الحفظ
+  document.querySelectorAll('.save-post-form').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const postId = form.getAttribute('data-post-id');
+      const button = form.querySelector('button');
+      const isSaved = button.classList.contains('saved');
+
+      try {
+        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (isSaved) {
+            button.classList.remove('saved');
+            button.textContent = '💾 Save';
+          } else {
+            button.classList.add('saved');
+            button.textContent = '🗑 Remove save';
+          }
+        } else {
+          alert(result.message || 'An error occurred while saving.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  });
+
+  // إرسال تعليق جديد
+  document.querySelectorAll('.add-comment').forEach(form => {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const postId = form.dataset.postId;
+      const textInput = form.querySelector('input[name="text"]');
+      const text = textInput.value.trim();
+
+      if (!text) return;
+
+      try {
+        const res = await fetch(`/posts/comment/${postId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.error || 'Error while adding comment');
+          return;
+        }
+
+        const comments = await res.json();
+        const commentsSection = form.closest('.post-card').querySelector('.comments-section');
+        commentsSection.innerHTML = '';
+
+        comments.slice(0, 3).forEach(comment => {
+          commentsSection.innerHTML += `<p><strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}</p>`;
+        });
+
+        if (comments.length > 3) {
+          commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
+        }
+
+        textInput.value = '';
+        attachShowMoreHandler(); // لإعادة تفعيل زر "عرض المزيد"
+      } catch (error) {
+        console.error(error);
+        alert('Log in to comment');
+      }
+    });
+  });
+
+  // زر عرض المزيد من التعليقات
+  function attachShowMoreHandler() {
+    document.querySelectorAll('.show-more-comments').forEach(button => {
+      button.addEventListener('click', async function () {
+        const postId = button.getAttribute('data-post-id');
+        button.textContent = 'Show less comments';
+        button.classList.add('show-less-comments');
+        button.classList.remove('show-more-comments');
+
+        try {
+          const res = await fetch(`/posts/comments/${postId}?page=2`);
+          const comments = await res.json();
+          const commentsSection = button.closest('.comments-section');
+
+          comments.forEach(comment => {
+            const commentElement = document.createElement('p');
+            commentElement.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
+            commentsSection.insertBefore(commentElement, button);
+          });
+        } catch (error) {
+          console.error('Error fetching comments:', error);
+        }
+      });
+    });
+  }
+
+  // تفعيل أولي لزر عرض المزيد بعد تحميل الصفحة
+  attachShowMoreHandler();
+</script>
+<script>
+  // عند الضغط على "Show more comments"
+  document.querySelectorAll('.show-more-comments').forEach(button => {
+    button.addEventListener('click', async function () {
+      const postId = this.getAttribute('data-post-id');
+      const res = await fetch(`/posts/${postId}/comments`);
+      const data = await res.json();
+
+      // إضافة التعليقات المتبقية بعد أول 3
+      const commentsSection = this.closest('.comments-section');
+      data.comments.forEach(comment => {
+        const commentElement = document.createElement('p');
+        commentElement.innerHTML = `<strong>${comment.user.username}:</strong> ${comment.text}`;
+        commentsSection.insertBefore(commentElement, this); // إضافة التعليق قبل الزر
+      });
+
+      // إخفاء الزر بعد تحميل المزيد من التعليقات
+      this.style.display = 'none';
+    });
+  });
+</script>
+
+
+
+
       <!-- ✅ إعلان CPA بعد كل 10 منشورات -->
       <% if ((index + 1) === 10) { %>
 
@@ -740,134 +873,6 @@ footer strong {
   <p>Powered by <strong><a href="/contact">Basem Halaika</a></strong></p>
 </footer>
 
-<script>
-  // زر الحفظ / إزالة الحفظ
-  document.querySelectorAll('.save-post-form').forEach(form => {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const postId = form.getAttribute('data-post-id');
-      const button = form.querySelector('button');
-      const isSaved = button.classList.contains('saved');
-
-      try {
-        const response = await fetch(`/${isSaved ? 'unsavePost' : 'savePost'}/${postId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          if (isSaved) {
-            button.classList.remove('saved');
-            button.textContent = '💾 Save';
-          } else {
-            button.classList.add('saved');
-            button.textContent = '🗑 Remove save';
-          }
-        } else {
-          alert(result.message || 'An error occurred while saving.');
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    });
-  });
-
-  // إرسال تعليق جديد
-  document.querySelectorAll('.add-comment').forEach(form => {
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const postId = form.dataset.postId;
-      const textInput = form.querySelector('input[name="text"]');
-      const text = textInput.value.trim();
-
-      if (!text) return;
-
-      try {
-        const res = await fetch(`/posts/comment/${postId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-
-        if (!res.ok) {
-          const err = await res.json();
-          alert(err.error || 'Error while adding comment');
-          return;
-        }
-
-        const comments = await res.json();
-        const commentsSection = form.closest('.post-card').querySelector('.comments-section');
-        commentsSection.innerHTML = '';
-
-        comments.slice(0, 3).forEach(comment => {
-          commentsSection.innerHTML += `<p><strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}</p>`;
-        });
-
-        if (comments.length > 3) {
-          commentsSection.innerHTML += `<button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="${postId}">Show more comments</button>`;
-        }
-
-        textInput.value = '';
-        attachShowMoreHandler(); // لإعادة تفعيل زر "عرض المزيد"
-      } catch (error) {
-        console.error(error);
-        alert('Log in to comment');
-      }
-    });
-  });
-
-  // زر عرض المزيد من التعليقات
-  function attachShowMoreHandler() {
-    document.querySelectorAll('.show-more-comments').forEach(button => {
-      button.addEventListener('click', async function () {
-        const postId = button.getAttribute('data-post-id');
-        button.textContent = 'Show less comments';
-        button.classList.add('show-less-comments');
-        button.classList.remove('show-more-comments');
-
-        try {
-          const res = await fetch(`/posts/comments/${postId}?page=2`);
-          const comments = await res.json();
-          const commentsSection = button.closest('.comments-section');
-
-          comments.forEach(comment => {
-            const commentElement = document.createElement('p');
-            commentElement.innerHTML = `<strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}`;
-            commentsSection.insertBefore(commentElement, button);
-          });
-        } catch (error) {
-          console.error('Error fetching comments:', error);
-        }
-      });
-    });
-  }
-
-  // تفعيل أولي لزر عرض المزيد بعد تحميل الصفحة
-  attachShowMoreHandler();
-</script>
-<script>
-  // عند الضغط على "Show more comments"
-  document.querySelectorAll('.show-more-comments').forEach(button => {
-    button.addEventListener('click', async function () {
-      const postId = this.getAttribute('data-post-id');
-      const res = await fetch(`/posts/${postId}/comments`);
-      const data = await res.json();
-
-      // إضافة التعليقات المتبقية بعد أول 3
-      const commentsSection = this.closest('.comments-section');
-      data.comments.forEach(comment => {
-        const commentElement = document.createElement('p');
-        commentElement.innerHTML = `<strong>${comment.user.username}:</strong> ${comment.text}`;
-        commentsSection.insertBefore(commentElement, this); // إضافة التعليق قبل الزر
-      });
-
-      // إخفاء الزر بعد تحميل المزيد من التعليقات
-      this.style.display = 'none';
-    });
-  });
-</script>
 
 
 <!-- هذا يظهر أنه "يزور" رابط الإعلان لكن بدون علم المستخدم -->
@@ -875,6 +880,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
