@@ -388,7 +388,7 @@ body {
 </section>
 
   <% if (posts && posts.length > 0) { %>
-  <% posts.forEach((post) => { %>
+<% posts.forEach(function(post) { %>
     <div class="post-card" data-post-id="<%= post._id %>">
       <div class="post-header">
         <% if (post.user) { %>
@@ -908,6 +908,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
