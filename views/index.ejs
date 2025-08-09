@@ -791,32 +791,7 @@ document.querySelectorAll('.post-card').forEach(card => {
 
 
 
-    // Example for saving post (bookmark)
-    document.querySelectorAll('.btn-bookmark').forEach(button => {
-      button.addEventListener('click', async () => {
-        const postId = button.dataset.postId;
-
-        try {
-          const res = await fetch(`/posts/bookmark/${postId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          });
-
-          const data = await res.json();
-
-          if (data.bookmarked) {
-            button.classList.remove('bi-bookmark');
-            button.classList.add('bi-bookmark-fill', 'text-primary');
-          } else {
-            button.classList.remove('bi-bookmark-fill', 'text-primary');
-            button.classList.add('bi-bookmark');
-          }
-        } catch (err) {
-          console.error('Bookmark error:', err);
-          alert('Log in to comment');
-        }
-      });
-    });
+   
     
     // Handling reactions
     document.querySelectorAll('.toggle-reactions').forEach(btn => {
@@ -875,11 +850,40 @@ footer strong {
 
 
 
-<!-- هذا يظهر أنه "يزور" رابط الإعلان لكن بدون علم المستخدم -->
+<!-- <script>
+ // Example for saving post (bookmark)
+    document.querySelectorAll('.btn-bookmark').forEach(button => {
+      button.addEventListener('click', async () => {
+        const postId = button.dataset.postId;
+
+        try {
+          const res = await fetch(`/posts/bookmark/${postId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          const data = await res.json();
+
+          if (data.bookmarked) {
+            button.classList.remove('bi-bookmark');
+            button.classList.add('bi-bookmark-fill', 'text-primary');
+          } else {
+            button.classList.remove('bi-bookmark-fill', 'text-primary');
+            button.classList.add('bi-bookmark');
+          }
+        } catch (err) {
+          console.error('Bookmark error:', err);
+          alert('Log in to comment');
+        }
+      });
+    });
+</script> 
+-->
 
 
 </body>
 </html>
+
 
 
 
