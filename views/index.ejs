@@ -458,15 +458,16 @@ body {
           <% } %>
         </div>
 
-        <div class="px-3 pb-3" id="comment-btn">
-    <% post.comments.forEach(c => { %>
-      <p><strong><%= c.user.username %>:</strong> <%= c.text %></p>
-    <% }) %>
-  </div>
+        <div class="comments-section" id="comment-btn">
+          
+          <% }) %>
 
+        
+ <!-- 
           <% if (post.comments.length > 3) { %>
             <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
           <% } %>
+-->
         </div>
 
         <!-- Save form -->
@@ -546,7 +547,7 @@ if (res.ok) {
         const commentsSection = form.closest('.post-card').querySelector('.comments-section');
         commentsSection.innerHTML = '';
 
-        comments.slice(0, 3).forEach(comment => {
+        comments.slice(0, 1).forEach(comment => {
           commentsSection.innerHTML += `<p><strong>${comment.user?.username || 'Unknown'}:</strong> ${comment.text}</p>`;
         });
 
