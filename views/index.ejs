@@ -458,10 +458,11 @@ body {
           <% } %>
         </div>
 
-        <div class="comments-section" id="comment-btn">
-          <% post.comments.slice(0, 1).forEach(comment => { %>
-            <p><strong><%= comment.user.username %>:</strong> <%= comment.text %></p>
-          <% }) %>
+        <div class="px-3 pb-3" id="comment-btn">
+    <% post.comments.forEach(c => { %>
+      <p><strong><%= c.user.username %>:</strong> <%= c.text %></p>
+    <% }) %>
+  </div>
 
           <% if (post.comments.length > 3) { %>
             <button class="btn btn-link p-0 text-primary show-more-comments" data-post-id="<%= post._id %>">Show more comments</button>
@@ -950,6 +951,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
