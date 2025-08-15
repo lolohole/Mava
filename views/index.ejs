@@ -304,6 +304,7 @@ body {
   border-radius: 10px;
   margin: 20px auto;
   max-width: 600px;
+    height: 500px;
   overflow: hidden;
 }
 
@@ -319,7 +320,6 @@ body {
 }
 
 .video-section iframe {
-    width: 100%;
     height: 500px;
     border-radius: 8px;
 }
@@ -406,6 +406,33 @@ body {
         <!-- Media display -->
         <% if (post.mediaType === 'image') { %>
           <img class="post-image" src="<%= post.media %>" alt="Post Image" />
+<!-- HTML - الزر -->
+<a href="https://www.profitableratecpm.com/p97712012f?key=32624a3d31450ae07f077d4185b5b472" class="support-button" target="_blank">
+    🎥 Watch an ad to support the platform owner
+</a>
+
+<!-- CSS - التصميم -->
+<style>
+.support-button {
+    display: inline-block;
+    background-color: #007bff;         /* لون أزرق جميل */
+    color: #fff;                        /* لون الخط */
+    padding: 12px 20px;                /* مساحة داخلية للزر */
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;                /* زوايا مستديرة */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* ظل بسيط */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
+}
+
+.support-button:hover {
+    background-color: #0056b3;         /* لون أغمق عند المرور */
+    transform: scale(1.03);            /* تكبير بسيط عند المرور */
+}
+</style>
         <% } else if (post.mediaType === 'video') { %>
           <video class="post-video" controls>
             <source src="<%= post.media %>" type="video/mp4" />
@@ -928,6 +955,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
