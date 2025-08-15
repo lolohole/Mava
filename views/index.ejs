@@ -329,19 +329,22 @@ body {
 }
 
 .donate-button {
-    background-color: #ff9900;
-    color: white;
-    font-size: 1.2em;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-transform: uppercase;
+  background-color: #dc3545;
+  color: white;
+  font-size: 1em;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
 }
 
 .donate-button:hover {
-    background-color: #e68900;
+  background-color: #bd2130;
 }
+
 
 </style>
 </head>
@@ -370,24 +373,32 @@ body {
  <!-- Main content -->
 <!-- Main content -->
 <div class="post-card">
-   <section >
-    <div class="post-header">
-        <h2>Support Gaza Children</h2>
-        <p>These innocent children need your help. Donate now and make a difference.</p>
-        
-        <div class="post-video">
-            <video src="/images/gazaVideo.webm"   type="video/mp4" controls autoplay>                Your browser does not support the video tag.
-</video> 
-                    
-        </div>
-        
-        <div class="donation-button">
-            <a href="https://www.patreon.com/posts/help-gaza-one-136099152?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank">
-                <button class="donate-button">Donate Now</button>
-            </a>
-        </div>
-    </div>
-</section>
+   <!-- Gaza Donation Promo (Styled as a post) -->
+<div class="post-card" id="gaza-donation-promo">
+  <div class="post-header">
+    <img src="/images/gaza-avatar.png" alt="Gaza Avatar" class="avatar" />
+    <strong>Gaza Relief Fund</strong>
+  </div>
+
+  <!-- فيديو -->
+  <video class="post-image" controls>
+    <source src="/images/gazaVideo.webm" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- وصف -->
+  <div class="post-caption">
+    🕊️ These innocent children in Gaza are suffering due to war and blockade. Your support can provide them food, shelter, and hope. Every small donation matters.
+  </div>
+
+  <!-- زر التبرع -->
+  <div class="donation-button" style="text-align: center; margin-bottom: 15px;">
+    <a href="https://www.patreon.com/posts/help-gaza-one-136099152?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link" target="_blank">
+      <button class="donate-button">❤️ Donate to Gaza</button>
+    </a>
+  </div>
+</div>
+
   <% if (posts && posts.length > 0) { %>
     <% posts.forEach((post, index) => { %>
       <div class="post-card" data-post-id="<%= post._id %>">
@@ -955,6 +966,7 @@ footer strong {
 
 </body>
 </html>
+
 
 
 
